@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Samarthya — Intelligent Government Scheme Matching Portal</title>
+  <meta name="description" content="Samarthya bridges the gap between special-needs students and government welfare schemes. Instant criteria-based scheme matching powered by AI.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/main.css?v=5.0">
+  <link rel="stylesheet" href="css/components.css?v=5.0">
+  <link rel="stylesheet" href="css/features.css?v=5.0">
+</head>
+<body>
+  <!-- Ambient Background Orbs & Grid -->
+  <div class="bg-dots"></div>
+  <div class="bg-orb bg-orb-1"></div>
+  <div class="bg-orb bg-orb-2"></div>
+  <div class="bg-orb bg-orb-3"></div>
+
+  <!-- Loading Overlay -->
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-spinner"></div>
+    <div class="loading-text">Analyzing your profile against 50+ government schemes...</div>
+  </div>
+
+  <!-- Universal Modal (Used for Scheme Details & WhatsApp VIP Lead Capture) -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal-content-wrap" id="modalContent"></div>
+  </div>
+
+  <!-- Navigation -->
+  <nav class="navbar" id="navbar">
+    <a class="nav-brand" href="#home" onclick="App.navigate('home', event)" aria-label="Samarthya Home">
+      <div class="nav-logo">S</div>
+      <span class="nav-brand-text">Samarthya</span>
+    </a>
+    <ul class="nav-links" id="navLinks">
+      <li><a class="nav-link active" href="#home" data-page="home" onclick="App.navigate('home', event)" data-i18n="navHome">Home</a></li>
+      <li><a class="nav-link" href="#match" data-page="match" onclick="App.navigate('match', event)" data-i18n="navMatch">Find Schemes</a></li>
+      <li><a class="nav-link" href="#dashboard" data-page="dashboard" onclick="App.navigate('dashboard', event)" data-i18n="navDashboard">Dashboard</a></li>
+      <li><a class="nav-link" href="#ngo" data-page="ngo" onclick="App.navigate('ngo', event)" data-i18n="navNGO">NGO Camp Mode</a></li>
+      <li><a class="nav-link" href="#how" data-page="how" onclick="App.navigate('how', event)" data-i18n="navHow">How It Works</a></li>
+      <li><a class="nav-link" href="#about-section" onclick="App.scrollToAbout(event)" data-i18n="navAbout">About</a></li>
+      <li>
+        <button class="nav-action-btn" onclick="WisprFlow.toggle()" title="Wispr Flow Voice Assistant">
+          🎙️ <span>Wispr Voice</span>
+        </button>
+      </li>
+      <li>
+        <button class="nav-action-btn" onclick="AccessibilitySuite.togglePanel()" title="Accessibility Options">
+          ♿ <span>A11y</span>
+        </button>
+      </li>
+      <li>
+        <button class="nav-action-btn" id="langToggle" onclick="I18N.toggle()" data-i18n="langToggle">
+          🌐 <span>हिंदी</span>
+        </button>
+      </li>
+    </ul>
+    <button class="nav-mobile-toggle" id="mobileToggle" onclick="App.toggleMobileNav()" aria-label="Toggle menu">☰</button>
+  </nav>
+
+  <!-- ==================== PAGE 1: HOME ==================== -->
+  <section class="page active" id="page-home">
+    <div class="hero">
+      <div class="hero-split-container">
+        
+        <!-- Left Hero Content -->
+        <div class="hero-left-content">
+          <div class="hero-badge">
+            <span class="pulse-dot"></span>
+            <span>AI-Powered Government Scheme Matching</span>
+          </div>
+
+          <h1 class="hero-headline">
+            Empowering Every Student with <span class="gradient-text">Smart Welfare</span>
+          </h1>
+          
+          <p class="hero-tagline">
+            Discover all entitled central and state welfare schemes in under 2 seconds. Zero Aadhaar or document uploads required — purely privacy-first and instant.
+          </p>
+
+          <div class="hero-actions">
+            <button class="hero-cta" onclick="App.navigate('match')" id="heroCta">
+              <span data-i18n="heroCta">Find My Schemes</span>
+              <span style="font-size:18px">→</span>
+            </button>
+            <button class="hero-secondary-btn" onclick="SamarthyaAI.toggle()">
+              <span>✨ Ask Samarthya AI</span>
+            </button>
+            <button class="hero-secondary-btn" onclick="WisprFlow.toggle()">
+              <span>🎙️ Voice Match</span>
+            </button>
+          </div>
+
+          <div class="hero-mini-stats">
+            <div class="hero-mini-stat">
+              <span class="hero-stat-num" data-i18n="heroStats1">50+</span>
+              <span class="hero-stat-label" data-i18n="heroStats1Label">Govt Schemes</span>
+            </div>
+            <div class="hero-mini-stat-divider"></div>
+            <div class="hero-mini-stat">
+              <span class="hero-stat-num">&lt;2s</span>
+              <span class="hero-stat-label">Instant Match</span>
+            </div>
+            <div class="hero-mini-stat-divider"></div>
+            <div class="hero-mini-stat">
+              <span class="hero-stat-num">100%</span>
+              <span class="hero-stat-label">Free &amp; Private</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right 3D Visual Stage -->
+        <div class="hero-right-stage">
+          <div class="rings-stage-wrapper" id="ringsStageWrapper">
+            <div class="rings-stage-glow"></div>
+            
+            <canvas id="morphing-rings-canvas" class="morphing-rings-canvas"></canvas>
+
+            <div class="stage-chip chip-top">
+              <div class="chip-dot"></div>
+              <div class="chip-text">
+                <span class="chip-title">Samarthya Intelligence</span>
+                <span class="chip-status">Rule Engine Active</span>
+              </div>
+            </div>
+
+            <div class="stage-chip chip-bottom-left">
+              <div class="chip-icon">🎯</div>
+              <div class="chip-text">
+                <span class="chip-title">50+ State &amp; Central Schemes</span>
+                <span class="chip-desc">Probability Scoring</span>
+              </div>
+            </div>
+
+            <div class="stage-chip chip-bottom-right">
+              <div class="chip-icon">🛡️</div>
+              <div class="chip-text">
+                <span class="chip-title">Zero Document Upload</span>
+                <span class="chip-desc">DPDP Act 2023 Safe</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- About sections -->
+    <div id="about-section" class="container" style="padding-top:20px">
+      <div class="section-header">
+        <div class="section-tag">ABOUT SAMARTHYA</div>
+        <h2 class="section-title">Built for Real Impact</h2>
+        <p class="section-subtitle">Bridging the critical gap between students with disabilities and government welfare subsidies across India.</p>
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(300px, 1fr));gap:24px;margin-bottom:60px">
+        <div class="form-card">
+          <div style="font-size:32px;margin-bottom:12px">🎯</div>
+          <h3 style="font-size:20px;font-weight:800;color:#fff;margin-bottom:8px">Rule-Based Inference</h3>
+          <p style="font-size:14px;color:var(--text-secondary)">We evaluate age brackets, disability percentages, annual income ceilings, education levels, and state domicile to compute exact eligibility probability scores.</p>
+        </div>
+
+        <div class="form-card">
+          <div style="font-size:32px;margin-bottom:12px">🔒</div>
+          <h3 style="font-size:20px;font-weight:800;color:#fff;margin-bottom:8px">Privacy-First Architecture</h3>
+          <p style="font-size:14px;color:var(--text-secondary)">No Aadhaar cards or personal ID documents are requested. Your sensitive health data never leaves your browser session, complying with the DPDP Act 2023.</p>
+        </div>
+
+        <div class="form-card">
+          <div style="font-size:32px;margin-bottom:12px">⚡</div>
+          <h3 style="font-size:20px;font-weight:800;color:#fff;margin-bottom:8px">Wispr Flow AI &amp; Voice</h3>
+          <p style="font-size:14px;color:var(--text-secondary)">Speak naturally to auto-fill search criteria or chat directly with Samarthya AI to clear doubts about scholarship eligibility and assistive appliance distribution camps.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== PAGE 2: SCHEME FINDER (MATCH) ==================== -->
+  <section class="page" id="page-match">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-tag">SCHEME FINDER</div>
+        <h1 class="section-title" data-i18n="formTitle">Student Profile Criteria</h1>
+        <p class="section-subtitle" data-i18n="formSubtitle">Enter simple demographic criteria to scan 50+ government schemes instantly.</p>
+      </div>
+
+      <div class="form-container">
+        <!-- Form Progress -->
+        <div class="form-progress">
+          <div class="form-step-indicator">
+            <div class="step-dot active" id="stepDot1" onclick="FormController.goToStep(1)" role="button" tabindex="0" title="Step 1: Personal Info">1</div>
+            <div class="step-line" id="stepLine1"></div>
+            <div class="step-dot" id="stepDot2" onclick="FormController.goToStep(2)" role="button" tabindex="0" title="Step 2: Disability Details">2</div>
+            <div class="step-line" id="stepLine2"></div>
+            <div class="step-dot" id="stepDot3" onclick="FormController.goToStep(3)" role="button" tabindex="0" title="Step 3: Education & Income">3</div>
+          </div>
+        </div>
+        <div class="step-labels">
+          <span class="step-label active" onclick="FormController.goToStep(1)" style="cursor:pointer" data-i18n="formStep1">Personal Info</span>
+          <span class="step-label" onclick="FormController.goToStep(2)" style="cursor:pointer" data-i18n="formStep2">Disability Details</span>
+          <span class="step-label" onclick="FormController.goToStep(3)" style="cursor:pointer" data-i18n="formStep3">Education & Income</span>
+        </div>
+
+        <!-- Step 1: Personal Info -->
+        <div class="form-panel active" id="formStep1">
+          <div class="form-card">
+            <div class="form-group">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+                <label class="form-label" data-i18n="formName" style="margin:0">Student Name (optional)</label>
+                <button type="button" class="voice-input-btn" onclick="WisprFlow.toggle('inputName')">
+                  🎙️ Wispr Voice Fill
+                </button>
+              </div>
+              <input type="text" class="form-input" id="inputName" placeholder="Enter student name or alias...">
+            </div>
+            <div class="form-group">
+              <label class="form-label"><span data-i18n="formDob">Date of Birth</span> <span class="required">*</span></label>
+              <input type="date" class="form-input" id="inputDob" required>
+              <div class="form-error" data-i18n="formRequired">Required field</div>
+            </div>
+            <div class="form-group">
+              <label class="form-label"><span data-i18n="formGender">Gender</span> <span class="required">*</span></label>
+              <select class="form-select" id="inputGender" required>
+                <option value="">— Select —</option>
+                <option value="male" data-i18n="formGenderM">Male</option>
+                <option value="female" data-i18n="formGenderF">Female</option>
+                <option value="other" data-i18n="formGenderO">Other</option>
+              </select>
+              <div class="form-error" data-i18n="formRequired">Required field</div>
+            </div>
+            <div class="form-group">
+              <label class="form-label"><span data-i18n="formState">State / UT Domicile</span> <span class="required">*</span></label>
+              <select class="form-select" id="inputState" required>
+                <option value="">— Select State —</option>
+              </select>
+              <div class="form-error" data-i18n="formRequired">Required field</div>
+            </div>
+            <div class="form-actions">
+              <div></div>
+              <button class="btn btn-primary" onclick="FormController.nextStep()">
+                <span data-i18n="formNext">Next Step</span> <span>→</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 2: Disability Details -->
+        <div class="form-panel" id="formStep2">
+          <div class="form-card">
+            <div class="form-group">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+                <label class="form-label" style="margin:0"><span data-i18n="formDisabilityType">Disability Type(s)</span> <span class="required">*</span></label>
+                <button type="button" class="voice-input-btn" onclick="WisprFlow.toggle()">
+                  🎙️ Speak Disability
+                </button>
+              </div>
+              <div class="checkbox-grid" id="disabilityCheckboxes"></div>
+              <div class="form-error" id="disabilityError" data-i18n="formRequired">Please select at least one condition</div>
+            </div>
+            <div class="form-group">
+              <label class="form-label"><span data-i18n="formDisabilityPercent">Disability Percentage</span> <span class="required">*</span></label>
+              <div class="range-container">
+                <div class="range-value" id="percentDisplay">40%</div>
+                <input type="range" class="form-range" id="inputPercent" min="0" max="100" value="40" oninput="FormController.updatePercent(this.value)">
+                <div class="range-labels">
+                  <span>0%</span>
+                  <span>40% (Benchmark for Govt Schemes)</span>
+                  <span>100%</span>
+                </div>
+              </div>
+            </div>
+            <div class="form-actions">
+              <button class="btn btn-secondary" onclick="FormController.prevStep()">
+                <span>←</span> <span data-i18n="formPrev">Back</span>
+              </button>
+              <button class="btn btn-primary" onclick="FormController.nextStep()">
+                <span data-i18n="formNext">Next Step</span> <span>→</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 3: Education & Income -->
+        <div class="form-panel" id="formStep3">
+          <div class="form-card">
+            <div class="form-group">
+              <label class="form-label"><span data-i18n="formEducation">Current Education Level</span> <span class="required">*</span></label>
+              <select class="form-select" id="inputEducation" required>
+                <option value="">— Select Education Level —</option>
+              </select>
+              <div class="form-error" data-i18n="formRequired">Required field</div>
+            </div>
+            <div class="form-group">
+              <label class="form-label"><span data-i18n="formIncome">Annual Household Income (₹)</span> <span class="required">*</span></label>
+              <select class="form-select" id="inputIncome" required>
+                <option value="">— Select Income Range —</option>
+                <option value="50000">Below ₹50,000</option>
+                <option value="100000">₹50,000 — ₹1,00,000</option>
+                <option value="150000">₹1,00,000 — ₹2,00,000</option>
+                <option value="250000">₹2,00,000 — ₹2,50,000</option>
+                <option value="300000">₹2,50,000 — ₹3,00,000</option>
+                <option value="500000">₹3,00,000 — ₹5,00,000</option>
+                <option value="600000">₹5,00,000 — ₹6,00,000</option>
+                <option value="800000">₹6,00,000 — ₹8,00,000</option>
+                <option value="1000000">₹8,00,000 — ₹10,00,000</option>
+                <option value="1500000">Above ₹10,00,000</option>
+              </select>
+              <div class="form-error" data-i18n="formRequired">Required field</div>
+            </div>
+
+            <!-- Anti-Bot Honeypot (Silent) -->
+            <input type="text" id="hpField" name="website_hp" style="opacity:0;position:absolute;top:-9999px;left:-9999px;height:0;width:0;" tabindex="-1" autocomplete="off">
+
+            <div class="form-actions">
+              <button class="btn btn-secondary" onclick="FormController.prevStep()">
+                <span>←</span> <span data-i18n="formPrev">Back</span>
+              </button>
+              <button class="btn btn-success" onclick="FormController.submit()" id="submitBtn">
+                <span>⚡</span> <span data-i18n="formSubmit">Find Matching Schemes</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Results Area (Populated dynamically & triggers WhatsApp notification popup) -->
+      <div id="resultsArea" style="display:none; padding-top: 40px; padding-bottom: 60px;"></div>
+    </div>
+  </section>
+
+  <!-- ==================== PAGE 3: DASHBOARD & APPLICATION TRACKER ==================== -->
+  <section class="page" id="page-dashboard">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-tag">APPLICATIONS &amp; DEADLINES</div>
+        <h1 class="section-title" data-i18n="dashTitle">Application Dashboard</h1>
+        <p class="section-subtitle">Track your bookmarked schemes, application stages, and export calendar reminders.</p>
+      </div>
+      <div id="dashboardContent">
+        <div class="form-card" style="text-align:center;padding:48px 24px">
+          <div style="font-size:42px;margin-bottom:12px">📊</div>
+          <h3 style="font-size:20px;font-weight:800;color:#fff;margin-bottom:8px">No Application Tracked Yet</h3>
+          <p style="font-size:14px;color:var(--text-secondary);max-width:440px;margin:0 auto 24px">Complete the scheme search to see matched entitlements and track applications.</p>
+          <button class="btn btn-primary" onclick="App.navigate('match')">
+            <span>Find Schemes Now</span> <span>→</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== PAGE 4: NGO / COUNSELOR CAMP MODE ==================== -->
+  <section class="page" id="page-ngo">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-tag">NGO &amp; COUNSELOR PORTAL</div>
+        <h1 class="section-title">Disability Camp Bulk Matching</h1>
+        <p class="section-subtitle">Evaluate multiple special-needs student profiles simultaneously for district camps and institutions.</p>
+      </div>
+
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:24px;background:rgba(7,35,34,0.6);padding:16px 20px;border-radius:14px;border:1px solid var(--border)">
+        <div style="display:flex;align-items:center;gap:10px">
+          <span style="font-size:24px">⛺</span>
+          <div>
+            <div style="font-weight:700;color:#fff;font-size:14px">Active Camp Batch: National Inclusive Drive 2026</div>
+            <div style="font-size:12px;color:var(--accent-mint)">Evaluation Engine: Samarthya 50+ Policy Matrix</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn-sm btn-secondary" onclick="NGOMode.loadDemoBatch()">🔄 Reload Demo Batch</button>
+          <label class="btn-sm btn-secondary" style="cursor:pointer;margin:0">
+            📥 Import CSV
+            <input type="file" accept=".csv" style="display:none" onchange="NGOMode.handleCSVUpload(this)">
+          </label>
+          <button class="btn-sm btn-secondary" onclick="NGOMode.downloadTemplate()">📄 Sample Template</button>
+          <button class="btn-sm btn-primary" onclick="NGOMode.exportBatchCSV()">📤 Export Report</button>
+        </div>
+      </div>
+
+      <div class="ngo-stats-grid" id="ngoStatsContainer"></div>
+
+      <div style="margin-top:28px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+          <h3 style="font-size:18px;font-weight:800;color:#fff;margin:0">Beneficiary Evaluation Matrix</h3>
+          <span style="font-size:12px;color:var(--accent-mint)">● All 50+ Policies Evaluated Instantly</span>
+        </div>
+        <div class="ngo-table-container">
+          <table class="ngo-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Student &amp; Domicile</th>
+                <th>Disability &amp; Severity</th>
+                <th>Matched Schemes</th>
+                <th>Top Matched Entitlements</th>
+                <th>Est. Benefit</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="ngoStudentTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== PAGE 5: HOW IT WORKS ==================== -->
+  <section class="page" id="page-how">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-tag">ENGINE ARCHITECTURE</div>
+        <h1 class="section-title" data-i18n="howTitle">How Samarthya Operates</h1>
+        <p class="section-subtitle" data-i18n="howSubtitle">Four straightforward steps to discover your entitled welfare schemes.</p>
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(240px, 1fr));gap:20px;margin-bottom:48px">
+        <div class="form-card">
+          <div style="font-family:var(--font-heading);font-size:32px;font-weight:900;color:var(--accent-mint);margin-bottom:8px">01</div>
+          <h4 style="font-size:18px;font-weight:800;color:#fff;margin-bottom:6px">Demographic Input</h4>
+          <p style="font-size:13px;color:var(--text-secondary)">Provide your basic criteria: DOB, disability type, percentage, state, and income slab.</p>
+        </div>
+        <div class="form-card">
+          <div style="font-family:var(--font-heading);font-size:32px;font-weight:900;color:var(--accent-cyan);margin-bottom:8px">02</div>
+          <h4 style="font-size:18px;font-weight:800;color:#fff;margin-bottom:6px">50+ Policy Matrix Scan</h4>
+          <p style="font-size:13px;color:var(--text-secondary)">The local rule engine cross-checks all central and state welfare notifications.</p>
+        </div>
+        <div class="form-card">
+          <div style="font-family:var(--font-heading);font-size:32px;font-weight:900;color:var(--accent-purple);margin-bottom:8px">03</div>
+          <h4 style="font-size:18px;font-weight:800;color:#fff;margin-bottom:6px">Probability Scoring</h4>
+          <p style="font-size:13px;color:var(--text-secondary)">Calculates an explainable trust score (0–100%) explaining exactly why you match.</p>
+        </div>
+        <div class="form-card">
+          <div style="font-family:var(--font-heading);font-size:32px;font-weight:900;color:var(--accent-gold);margin-bottom:8px">04</div>
+          <h4 style="font-size:18px;font-weight:800;color:#fff;margin-bottom:6px">Direct Official Links</h4>
+          <p style="font-size:13px;color:var(--text-secondary)">Get direct application links to NSP, Swavlamban, and ALIMCO with zero middlemen.</p>
+        </div>
+      </div>
+
+      <div style="text-align:center">
+        <button class="btn btn-primary" onclick="App.navigate('match')">
+          <span>Start Finding Schemes Now</span> <span>→</span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== FLOATING WIDGETS ==================== -->
+
+  <!-- 1. Wispr Flow AI Voice Waveform Bar -->
+  <div class="wispr-flow-bar" id="wisprFlowBar">
+    <div class="wispr-left-info">
+      <div class="wispr-live-dot"></div>
+      <div class="wispr-text-meta">
+        <span class="wispr-brand-title">Wispr Flow AI Voice</span>
+        <span class="wispr-live-transcript" id="wisprLiveTranscript">Listening... Speak in Hindi or English</span>
+      </div>
+    </div>
+    <canvas class="wispr-canvas-wave" id="wisprCanvas"></canvas>
+    <button class="wispr-stop-btn" onclick="WisprFlow.stop()">✕ Stop</button>
+  </div>
+
+  <!-- 2. Dedicated Samarthya AI Floating FAB & Drawer -->
+  <button class="ai-floating-btn" id="aiFloatingBtn" onclick="SamarthyaAI.toggle()" aria-label="Open Samarthya AI Chatbot" title="Samarthya AI Assistant">
+    ✨
+  </button>
+
+  <div class="ai-drawer" id="aiDrawer">
+    <div class="ai-header">
+      <div class="ai-header-info">
+        <div class="ai-avatar">✨</div>
+        <div>
+          <div class="ai-title">Samarthya AI Assistant</div>
+          <div class="ai-status">● Online • 50+ Schemes Knowledge</div>
+        </div>
+      </div>
+      <button class="ai-close-btn" onclick="SamarthyaAI.close()">✕</button>
+    </div>
+
+    <div class="ai-chat-body" id="aiChatBody"></div>
+
+    <div class="ai-footer">
+      <input type="text" class="ai-input" id="aiChatInput" placeholder="Ask about scholarships, ADIP, documents..." onkeydown="if(event.key==='Enter')SamarthyaAI.handleSend()">
+      <button class="voice-input-btn" style="padding:6px 10px" onclick="WisprFlow.toggle()" title="Dictate to AI">🎙️</button>
+      <button class="ai-send-btn" onclick="SamarthyaAI.handleSend()">➤</button>
+    </div>
+  </div>
+
+  <!-- 3. Accessibility Tools Panel -->
+  <button class="a11y-floating-btn" id="a11yFloatingBtn" onclick="AccessibilitySuite.togglePanel()" aria-label="Open Accessibility Tools" title="Accessibility Tools">
+    ♿
+  </button>
+
+  <div class="a11y-panel" id="a11yPanel">
+    <div class="a11y-panel-header">
+      <div class="a11y-panel-title">
+        <span>♿</span>
+        <span>Accessibility Suite</span>
+      </div>
+      <button class="a11y-panel-close" onclick="AccessibilitySuite.closePanel()">✕</button>
+    </div>
+
+    <div class="a11y-controls-grid">
+      <div class="a11y-control-row">
+        <span class="a11y-control-label">🌓 High Contrast</span>
+        <button class="a11y-toggle-btn" id="a11yBtnContrast" onclick="AccessibilitySuite.toggleHighContrast()">Toggle</button>
+      </div>
+
+      <div class="a11y-control-row">
+        <span class="a11y-control-label">📖 Dyslexia Font</span>
+        <button class="a11y-toggle-btn" id="a11yBtnDyslexia" onclick="AccessibilitySuite.toggleDyslexiaFont()">Toggle</button>
+      </div>
+
+      <div class="a11y-control-row">
+        <span class="a11y-control-label">🔍 Text Scaling</span>
+        <div class="font-size-group">
+          <button class="font-size-btn active" onclick="AccessibilitySuite.setFontSize(0)">A</button>
+          <button class="font-size-btn" onclick="AccessibilitySuite.setFontSize(1)">A+</button>
+          <button class="font-size-btn" onclick="AccessibilitySuite.setFontSize(2)">A++</button>
+        </div>
+      </div>
+
+      <div class="a11y-control-row">
+        <span class="a11y-control-label">🔊 Voice Narrator</span>
+        <button class="a11y-toggle-btn" onclick="AccessibilitySuite.readActiveSection()">Read Page</button>
+      </div>
+
+      <div class="a11y-control-row">
+        <span class="a11y-control-label">🤟 Sign Language (ISL)</span>
+        <button class="a11y-toggle-btn" onclick="AccessibilitySuite.openISLAssistant()">Open Guide</button>
+      </div>
+
+      <div class="a11y-control-row">
+        <span class="a11y-control-label">🛑 Reduced Motion</span>
+        <button class="a11y-toggle-btn" id="a11yBtnMotion" onclick="AccessibilitySuite.toggleReducedMotion()">Toggle</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer" id="appFooter">
+    <div class="footer-container">
+      <div class="footer-nav">
+        <a href="#home" onclick="App.navigate('home', event)" data-i18n="navHome">Home</a>
+        <a href="#match" onclick="App.navigate('match', event)" data-i18n="navMatch">Find Schemes</a>
+        <a href="#dashboard" onclick="App.navigate('dashboard', event)" data-i18n="navDashboard">Dashboard</a>
+        <a href="#ngo" onclick="App.navigate('ngo', event)" data-i18n="navNGO">NGO Camp Mode</a>
+        <a href="#how" onclick="App.navigate('how', event)" data-i18n="navHow">How It Works</a>
+        <a href="#about-section" onclick="App.scrollToAbout(event)" data-i18n="navAbout">About</a>
+        <a href="#" onclick="WhatsAppLead.openModal();return false;" style="color:#25D366;font-weight:700">💬 VIP WhatsApp Alerts</a>
+      </div>
+      <p class="footer-text" data-i18n="poweredBy">Powered by Samarthya AI Engine • DPDP Act 2023 Compliant</p>
+    </div>
+  </footer>
+
+  <!-- Core Scripts with Cache Buster v5.0 -->
+  <script src="js/db.js?v=5.0"></script>
+  <script src="js/schemes.js?v=5.0"></script>
+  <script src="js/matcher.js?v=5.0"></script>
+  <script src="js/i18n.js?v=5.0"></script>
+  <script src="js/accessibility.js?v=5.0"></script>
+  <script src="js/wispr-flow.js?v=5.0"></script>
+  <script src="js/samarthya-ai.js?v=5.0"></script>
+  <script src="js/whatsapp-lead.js?v=5.0"></script>
+  <script src="js/tracker.js?v=5.0"></script>
+  <script src="js/ngo-mode.js?v=5.0"></script>
+  <script src="js/background-3d.js?v=5.0"></script>
+  <script src="js/report.js?v=5.0"></script>
+  <script src="js/cursor.js?v=5.0"></script>
+  <script src="js/app.js?v=5.0"></script>
+</body>
+</html>

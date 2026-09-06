@@ -4,6 +4,7 @@
 // ============================================
 
 const PartnerLocator = {
+  googleMapsApiKey: window.GOOGLE_MAPS_API_KEY || 'AIzaSyCAr8uQ9RT2zy_e5M0xaY-sckO9xd4ZrEk',
   map: null,
   markersGroup: null,
   userLocation: { lat: 28.6139, lng: 77.2090, label: 'New Delhi (Default)' }, // Default Center: New Delhi
@@ -387,6 +388,9 @@ const PartnerLocator = {
             <button class="btn-sm btn-secondary" onclick="PartnerLocator.focusMapOnPartner(${p.lat}, ${p.lng})">
               📍 View on Map
             </button>
+            <a href="https://www.google.com/maps/dir/?api=1&destination=${p.lat},${p.lng}" target="_blank" rel="noopener" class="btn-sm btn-secondary" style="text-decoration:none" title="Open Google Maps Navigation">
+              🧭 Directions
+            </a>
             <a href="${p.portalUrl}" target="_blank" rel="noopener" class="btn-sm btn-primary" style="text-decoration:none">
               Apply via ${p.type} Portal →
             </a>
@@ -404,23 +408,24 @@ const PartnerLocator = {
     }
   },
 
-  handleSearch() {
+  async handleSearch() {
     const input = document.getElementById('partnerPincodeInput');
     if (!input || !input.value.trim()) return;
 
-    const query = input.value.trim().toLowerCase();
+    const query = input.value.trim();
+    const queryLower = query.toLowerCase();
 
-    // Check pincode coordinates table
-    if (this.pincodeCoordinates[query]) {
-      const target = this.pincodeCoordinates[query];
+    // 1. Check local pre-computed pincode coordinates table
+    if (this.pincodeCoordinates[queryLower]) {
+      const target = this.pincodeCoordinates[queryLower];
       this.userLocation = target;
       this.refreshPartners();
       return;
     }
 
-    // Try matching city / district name
+    // 2. Try matching city / district name in local index
     const foundPincode = Object.keys(this.pincodeCoordinates).find(p => {
-      return this.pincodeCoordinates[p].label.toLowerCase().includes(query);
+      return this.pincodeCoordinates[p].label.toLowerCase().includes(queryLower);
     });
 
     if (foundPincode) {
@@ -429,7 +434,47 @@ const PartnerLocator = {
       return;
     }
 
-    alert(`Location for "${query}" not found in demo index. Try: 110001 (Delhi), 226010 (Lucknow), 400051 (Mumbai), 560001 (Bengaluru), 500028 (Hyderabad), 600014 (Chennai).`);
+    // 3. Dynamic lookup via Google Maps Geocoding API / OSM Fallback
+    const searchBtn = input.nextElementSibling;
+    const origBtnText = searchBtn ? searchBtn.textContent : 'Search';
+    if (searchBtn) searchBtn.textContent = '⌛ Searching...';
+
+    try {
+      // Try Google Maps Geocoding API if key configured
+      if (this.googleMapsApiKey) {
+        const gUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(query + ', India')}&key=${this.googleMapsApiKey}`;
+        const gRes = await fetch(gUrl).then(r => r.json()).catch(() => null);
+        if (gRes && gRes.status === 'OK' && gRes.results && gRes.results[0]) {
+          const loc = gRes.results[0].geometry.location;
+          this.userLocation = {
+            lat: loc.lat,
+            lng: loc.lng,
+            label: gRes.results[0].formatted_address || query
+          };
+          this.refreshPartners();
+          return;
+        }
+      }
+
+      // Fallback: OpenStreetMap Nominatim Geocoder (no key or billing required)
+      const osmUrl = `https://nominatim.openstreetmap.org/search?format=json&countrycodes=in&limit=1&q=${encodeURIComponent(query)}`;
+      const osmRes = await fetch(osmUrl, { headers: { 'Accept': 'application/json' } }).then(r => r.json()).catch(() => null);
+      if (osmRes && osmRes.length > 0) {
+        this.userLocation = {
+          lat: parseFloat(osmRes[0].lat),
+          lng: parseFloat(osmRes[0].lon),
+          label: osmRes[0].display_name.split(',').slice(0, 3).join(',')
+        };
+        this.refreshPartners();
+        return;
+      }
+    } catch (e) {
+      console.warn('Geocoding lookup error:', e);
+    } finally {
+      if (searchBtn) searchBtn.textContent = origBtnText;
+    }
+
+    alert(`Location for "${query}" not found. Try: 110001 (Delhi), 226010 (Lucknow), 400051 (Mumbai), 560001 (Bengaluru), 500028 (Hyderabad), 600014 (Chennai).`);
   },
 
   requestBrowserGeolocation() {

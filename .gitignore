@@ -14,3 +14,7 @@ Thumbs.db
 .vscode/
 .idea/
 *.swp
+
+# Environment variables (do not commit secrets)
+.env
+.env*.local

@@ -8,9 +8,10 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Outfit:wght@400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/main.css?v=5.0">
-  <link rel="stylesheet" href="css/components.css?v=5.0">
-  <link rel="stylesheet" href="css/features.css?v=5.0">
+  <link rel="stylesheet" href="css/main.css?v=5.9">
+  <link rel="stylesheet" href="css/components.css?v=5.9">
+  <link rel="stylesheet" href="css/features.css?v=5.9">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
 </head>
 <body>
   <!-- Ambient Background Orbs & Grid -->
@@ -40,9 +41,6 @@
       <li><a class="nav-link active" href="#home" data-page="home" onclick="App.navigate('home', event)" data-i18n="navHome">Home</a></li>
       <li><a class="nav-link" href="#match" data-page="match" onclick="App.navigate('match', event)" data-i18n="navMatch">Find Schemes</a></li>
       <li><a class="nav-link" href="#dashboard" data-page="dashboard" onclick="App.navigate('dashboard', event)" data-i18n="navDashboard">Dashboard</a></li>
-      <li><a class="nav-link" href="#ngo" data-page="ngo" onclick="App.navigate('ngo', event)" data-i18n="navNGO">NGO Camp Mode</a></li>
-      <li><a class="nav-link" href="#how" data-page="how" onclick="App.navigate('how', event)" data-i18n="navHow">How It Works</a></li>
-      <li><a class="nav-link" href="#about-section" onclick="App.scrollToAbout(event)" data-i18n="navAbout">About</a></li>
       <li>
         <button class="nav-action-btn" onclick="WisprFlow.toggle()" title="Wispr Flow Voice Assistant">
           🎙️ <span>Wispr Voice</span>
@@ -54,9 +52,16 @@
         </button>
       </li>
       <li>
-        <button class="nav-action-btn" id="langToggle" onclick="I18N.toggle()" data-i18n="langToggle">
-          🌐 <span>हिंदी</span>
-        </button>
+        <div class="lang-select-wrap">
+          <select class="nav-lang-select" id="langSelect" onchange="I18N.setLanguage(this.value)" aria-label="Select Language">
+            <option value="en">🌐 English</option>
+            <option value="hi">🌐 हिंदी (Hindi)</option>
+            <option value="pa">🌐 ਪੰਜਾਬੀ (Punjabi)</option>
+            <option value="mr">🌐 मराठी (Marathi)</option>
+            <option value="ta">🌐 தமிழ் (Tamil)</option>
+            <option value="gu">🌐 ગુજરાતી (Gujarati)</option>
+          </select>
+        </div>
       </li>
     </ul>
     <button class="nav-mobile-toggle" id="mobileToggle" onclick="App.toggleMobileNav()" aria-label="Toggle menu">☰</button>
@@ -69,29 +74,41 @@
         
         <!-- Left Hero Content -->
         <div class="hero-left-content">
-          <div class="hero-badge">
-            <span class="pulse-dot"></span>
-            <span>AI-Powered Government Scheme Matching</span>
+          <!-- Persona Selector at Entry (Targeting SIH26093) -->
+          <div class="persona-selector-wrap" id="heroPersonaSelector">
+            <button class="persona-btn active" id="heroPersonaWelfare" onclick="App.setPersona('welfare')">
+              <span class="persona-icon">♿</span>
+              <span data-i18n="personaWelfare">Welfare &amp; Education Schemes</span>
+            </button>
+            <button class="persona-btn" id="heroPersonaCredit" onclick="App.setPersona('credit')">
+              <span class="persona-icon">💼</span>
+              <span data-i18n="personaCredit">Credit &amp; Enterprise Schemes</span>
+            </button>
           </div>
 
-          <h1 class="hero-headline">
+          <div class="hero-badge">
+            <span class="pulse-dot"></span>
+            <span data-i18n="heroBadge">AI-Powered Government Scheme Matching</span>
+          </div>
+
+          <h1 class="hero-headline" data-i18n="heroHeadline">
             Empowering Every Student with <span class="gradient-text">Smart Welfare</span>
           </h1>
           
-          <p class="hero-tagline">
+          <p class="hero-tagline" data-i18n="heroTagline">
             Discover all entitled central and state welfare schemes in under 2 seconds. Zero Aadhaar or document uploads required — purely privacy-first and instant.
           </p>
 
           <div class="hero-actions">
             <button class="hero-cta" onclick="App.navigate('match')" id="heroCta">
-              <span data-i18n="heroCta">Find My Schemes</span>
+              <span data-i18n="heroCta" id="heroCtaText">Find My Schemes</span>
               <span style="font-size:18px">→</span>
             </button>
             <button class="hero-secondary-btn" onclick="SamarthyaAI.toggle()">
-              <span>✨ Ask Samarthya AI</span>
+              <span data-i18n="heroAskAi">✨ Ask Samarthya AI</span>
             </button>
             <button class="hero-secondary-btn" onclick="WisprFlow.toggle()">
-              <span>🎙️ Voice Match</span>
+              <span data-i18n="heroVoiceMatch">🎙️ Voice Match</span>
             </button>
           </div>
 
@@ -103,44 +120,56 @@
             <div class="hero-mini-stat-divider"></div>
             <div class="hero-mini-stat">
               <span class="hero-stat-num">&lt;2s</span>
-              <span class="hero-stat-label">Instant Match</span>
+              <span class="hero-stat-label" data-i18n="heroInstantMatch">Instant Match</span>
             </div>
             <div class="hero-mini-stat-divider"></div>
             <div class="hero-mini-stat">
               <span class="hero-stat-num">100%</span>
-              <span class="hero-stat-label">Free &amp; Private</span>
+              <span class="hero-stat-label" data-i18n="heroFreePrivate">Free &amp; Private</span>
             </div>
           </div>
         </div>
 
-        <!-- Right 3D Visual Stage -->
+        <!-- Right Video Visual Stage -->
         <div class="hero-right-stage">
-          <div class="rings-stage-wrapper" id="ringsStageWrapper">
-            <div class="rings-stage-glow"></div>
+          <div class="hero-video-stage-wrapper" id="heroVideoStageWrapper">
+            <div class="hero-video-glow"></div>
             
-            <canvas id="morphing-rings-canvas" class="morphing-rings-canvas"></canvas>
+            <div class="hero-video-frame">
+              <video id="heroPromoVideo" class="hero-promo-video" muted loop playsinline preload="none" data-src="feature/promo_video.mp4" poster="feature/poster.png"></video>
+              <div class="hero-video-sheen"></div>
+              
+              <div class="hero-video-controls">
+                <button type="button" class="hero-video-mini-btn" id="heroVideoSoundBtn" onclick="App.toggleHeroVideoSound()" title="Toggle Audio">
+                  🔇 <span id="heroVideoSoundText">Muted</span>
+                </button>
+                <button type="button" class="hero-video-mini-btn" id="heroVideoPlayBtn" onclick="App.toggleHeroVideoPlay()" title="Play / Pause">
+                  ⏸️ <span id="heroVideoPlayText">Pause</span>
+                </button>
+              </div>
+            </div>
 
             <div class="stage-chip chip-top">
               <div class="chip-dot"></div>
               <div class="chip-text">
-                <span class="chip-title">Samarthya Intelligence</span>
-                <span class="chip-status">Rule Engine Active</span>
+                <span class="chip-title" data-i18n="chipIntel">Samarthya Intelligence</span>
+                <span class="chip-status" data-i18n="chipEngine">Rule Engine Active</span>
               </div>
             </div>
 
             <div class="stage-chip chip-bottom-left">
               <div class="chip-icon">🎯</div>
               <div class="chip-text">
-                <span class="chip-title">50+ State &amp; Central Schemes</span>
-                <span class="chip-desc">Probability Scoring</span>
+                <span class="chip-title" data-i18n="chipSchemes">50+ State &amp; Central Schemes</span>
+                <span class="chip-desc" data-i18n="chipScoring">Probability Scoring</span>
               </div>
             </div>
 
             <div class="stage-chip chip-bottom-right">
               <div class="chip-icon">🛡️</div>
               <div class="chip-text">
-                <span class="chip-title">Zero Document Upload</span>
-                <span class="chip-desc">DPDP Act 2023 Safe</span>
+                <span class="chip-title" data-i18n="chipZeroUpload">Zero Document Upload</span>
+                <span class="chip-desc" data-i18n="chipDpdp">DPDP Act 2023 Safe</span>
               </div>
             </div>
           </div>
@@ -149,31 +178,69 @@
       </div>
     </div>
 
+    <!-- ==================== HOW IT WORKS (IN SCROLL FLOW) ==================== -->
+    <div id="how-it-works-section" class="container" style="padding-top:40px">
+      <div class="section-header">
+        <div class="section-tag">ENGINE ARCHITECTURE</div>
+        <h2 class="section-title" data-i18n="howTitle">How Samarthya Operates</h2>
+        <p class="section-subtitle" data-i18n="howSubtitle">Four straightforward steps to discover your entitled welfare schemes.</p>
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(240px, 1fr));gap:20px;margin-bottom:48px">
+        <div class="form-card">
+          <div style="font-family:var(--font-heading);font-size:32px;font-weight:900;color:var(--accent-mint);margin-bottom:8px">01</div>
+          <h4 style="font-size:18px;font-weight:800;color:#fff;margin-bottom:6px" data-i18n="howStep1Title">Demographic Input</h4>
+          <p style="font-size:13px;color:var(--text-secondary)" data-i18n="howStep1Desc">Provide your basic criteria: DOB, disability type, percentage, state, and income slab.</p>
+        </div>
+        <div class="form-card">
+          <div style="font-family:var(--font-heading);font-size:32px;font-weight:900;color:var(--accent-cyan);margin-bottom:8px">02</div>
+          <h4 style="font-size:18px;font-weight:800;color:#fff;margin-bottom:6px" data-i18n="howStep2Title">50+ Policy Matrix Scan</h4>
+          <p style="font-size:13px;color:var(--text-secondary)" data-i18n="howStep2Desc">The local rule engine cross-checks all central and state welfare notifications.</p>
+        </div>
+        <div class="form-card">
+          <div style="font-family:var(--font-heading);font-size:32px;font-weight:900;color:var(--accent-purple);margin-bottom:8px">03</div>
+          <h4 style="font-size:18px;font-weight:800;color:#fff;margin-bottom:6px" data-i18n="howStep3Title">Probability Scoring</h4>
+          <p style="font-size:13px;color:var(--text-secondary)" data-i18n="howStep3Desc">Calculates an explainable trust score (0–100%) explaining exactly why you match.</p>
+        </div>
+        <div class="form-card">
+          <div style="font-family:var(--font-heading);font-size:32px;font-weight:900;color:var(--accent-gold);margin-bottom:8px">04</div>
+          <h4 style="font-size:18px;font-weight:800;color:#fff;margin-bottom:6px" data-i18n="howStep4Title">Direct Official Links</h4>
+          <p style="font-size:13px;color:var(--text-secondary)" data-i18n="howStep4Desc">Get direct application links to NSP, Swavlamban, and ALIMCO with zero middlemen.</p>
+        </div>
+      </div>
+
+      <div style="text-align:center;margin-bottom:50px">
+        <button class="btn btn-primary" onclick="App.navigate('match')">
+          <span data-i18n="startFinding">Start Finding Schemes Now</span> <span>→</span>
+        </button>
+      </div>
+    </div>
+
     <!-- About sections -->
     <div id="about-section" class="container" style="padding-top:20px">
       <div class="section-header">
-        <div class="section-tag">ABOUT SAMARTHYA</div>
-        <h2 class="section-title">Built for Real Impact</h2>
-        <p class="section-subtitle">Bridging the critical gap between students with disabilities and government welfare subsidies across India.</p>
+        <div class="section-tag" data-i18n="aboutTag">ABOUT SAMARTHYA</div>
+        <h2 class="section-title" data-i18n="aboutTitle">Built for Real Impact</h2>
+        <p class="section-subtitle" data-i18n="aboutSub">Bridging the critical gap between students with disabilities and government welfare subsidies across India.</p>
       </div>
 
       <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(300px, 1fr));gap:24px;margin-bottom:60px">
         <div class="form-card">
           <div style="font-size:32px;margin-bottom:12px">🎯</div>
-          <h3 style="font-size:20px;font-weight:800;color:#fff;margin-bottom:8px">Rule-Based Inference</h3>
-          <p style="font-size:14px;color:var(--text-secondary)">We evaluate age brackets, disability percentages, annual income ceilings, education levels, and state domicile to compute exact eligibility probability scores.</p>
+          <h3 style="font-size:20px;font-weight:800;color:#fff;margin-bottom:8px" data-i18n="aboutCard1Title">Rule-Based Inference</h3>
+          <p style="font-size:14px;color:var(--text-secondary)" data-i18n="aboutCard1Desc">We evaluate age brackets, disability percentages, annual income ceilings, education levels, and state domicile to compute exact eligibility probability scores.</p>
         </div>
 
         <div class="form-card">
           <div style="font-size:32px;margin-bottom:12px">🔒</div>
-          <h3 style="font-size:20px;font-weight:800;color:#fff;margin-bottom:8px">Privacy-First Architecture</h3>
-          <p style="font-size:14px;color:var(--text-secondary)">No Aadhaar cards or personal ID documents are requested. Your sensitive health data never leaves your browser session, complying with the DPDP Act 2023.</p>
+          <h3 style="font-size:20px;font-weight:800;color:#fff;margin-bottom:8px" data-i18n="aboutCard2Title">Privacy-First Architecture</h3>
+          <p style="font-size:14px;color:var(--text-secondary)" data-i18n="aboutCard2Desc">No Aadhaar cards or personal ID documents are requested. Your sensitive health data never leaves your browser session, complying with the DPDP Act 2023.</p>
         </div>
 
         <div class="form-card">
           <div style="font-size:32px;margin-bottom:12px">⚡</div>
-          <h3 style="font-size:20px;font-weight:800;color:#fff;margin-bottom:8px">Wispr Flow AI &amp; Voice</h3>
-          <p style="font-size:14px;color:var(--text-secondary)">Speak naturally to auto-fill search criteria or chat directly with Samarthya AI to clear doubts about scholarship eligibility and assistive appliance distribution camps.</p>
+          <h3 style="font-size:20px;font-weight:800;color:#fff;margin-bottom:8px" data-i18n="aboutCard3Title">Wispr Flow AI &amp; Voice</h3>
+          <p style="font-size:14px;color:var(--text-secondary)" data-i18n="aboutCard3Desc">Speak naturally to auto-fill search criteria or chat directly with Samarthya AI to clear doubts about scholarship eligibility and assistive appliance distribution camps.</p>
         </div>
       </div>
     </div>
@@ -184,11 +251,27 @@
     <div class="container">
       <div class="section-header">
         <div class="section-tag">SCHEME FINDER</div>
-        <h1 class="section-title" data-i18n="formTitle">Student Profile Criteria</h1>
-        <p class="section-subtitle" data-i18n="formSubtitle">Enter simple demographic criteria to scan 50+ government schemes instantly.</p>
+        <h1 class="section-title" data-i18n="formTitle">Eligibility Criteria Intake</h1>
+        <p class="section-subtitle" data-i18n="formSubtitle">Select your target category to evaluate welfare schemes or concessional enterprise credit.</p>
       </div>
 
-      <div class="form-container">
+      <!-- Persona Selector Bar (Targeting SIH26093) -->
+      <div style="display:flex;justify-content:center;margin-bottom:28px">
+        <div class="persona-selector-wrap">
+          <button class="persona-btn active" id="finderPersonaWelfare" onclick="App.setPersona('welfare')">
+            <span class="persona-icon">♿</span>
+            <span data-i18n="personaWelfareShort">PwD Welfare Schemes</span>
+          </button>
+          <button class="persona-btn" id="finderPersonaCredit" onclick="App.setPersona('credit')">
+            <span class="persona-icon">💼</span>
+            <span data-i18n="personaCreditShort">SC Enterprise Loans</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Welfare Track Intake Form (Existing) -->
+      <div id="welfareFormContainer">
+        <div class="form-container">
         <!-- Form Progress -->
         <div class="form-progress">
           <div class="form-step-indicator">
@@ -261,7 +344,7 @@
               <div class="checkbox-grid" id="disabilityCheckboxes"></div>
               <div class="form-error" id="disabilityError" data-i18n="formRequired">Please select at least one condition</div>
             </div>
-            <div class="form-group">
+            <div class="form-group" id="disabilityPercentGroup">
               <label class="form-label"><span data-i18n="formDisabilityPercent">Disability Percentage</span> <span class="required">*</span></label>
               <div class="range-container">
                 <div class="range-value" id="percentDisplay">40%</div>
@@ -326,9 +409,187 @@
           </div>
         </div>
       </div>
+      </div><!-- End welfareFormContainer -->
 
-      <!-- Results Area (Populated dynamically & triggers WhatsApp notification popup) -->
+      <!-- Credit Track Intake Form (SIH26093) -->
+      <div id="creditFormContainer" style="display:none">
+        <div class="form-container">
+          <!-- Credit Progress Indicator -->
+          <div class="form-progress">
+            <div class="form-step-indicator">
+              <div class="step-dot credit-step-dot active" id="creditStepDot1" onclick="CreditFormController.goToStep(1)" role="button" tabindex="0" title="Step 1: SC Category & Domicile">1</div>
+              <div class="step-line" id="creditStepLine1"></div>
+              <div class="step-dot credit-step-dot" id="creditStepDot2" onclick="CreditFormController.goToStep(2)" role="button" tabindex="0" title="Step 2: Project Details">2</div>
+              <div class="step-line" id="creditStepLine2"></div>
+              <div class="step-dot credit-step-dot" id="creditStepDot3" onclick="CreditFormController.goToStep(3)" role="button" tabindex="0" title="Step 3: Family Income Ceiling">3</div>
+            </div>
+          </div>
+          <div class="step-labels">
+            <span class="step-label credit-step-label active" onclick="CreditFormController.goToStep(1)" style="cursor:pointer" data-i18n="creditStep1">SC Category &amp; Domicile</span>
+            <span class="step-label credit-step-label" onclick="CreditFormController.goToStep(2)" style="cursor:pointer" data-i18n="creditStep2">Project &amp; Enterprise</span>
+            <span class="step-label credit-step-label" onclick="CreditFormController.goToStep(3)" style="cursor:pointer" data-i18n="creditStep3">Income Ceiling (≤₹5L)</span>
+          </div>
+
+          <!-- Credit Step 1: SC Category & Domicile -->
+          <div class="form-panel credit-form-panel active" id="creditFormStep1">
+            <div class="form-card">
+              <div class="form-group">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+                  <label class="form-label" style="margin:0">Entrepreneur / Student Name (optional)</label>
+                  <button type="button" class="voice-input-btn" onclick="WisprFlow.toggle('creditInputName')">
+                    🎙️ Wispr Voice Fill
+                  </button>
+                </div>
+                <input type="text" class="form-input" id="creditInputName" placeholder="Enter full name or business alias...">
+              </div>
+
+              <div class="form-group">
+                <label class="form-label"><span>Gender</span> <span class="required">*</span></label>
+                <select class="form-select" id="creditInputGender" required>
+                  <option value="">— Select Gender —</option>
+                  <option value="male">Male</option>
+                  <option value="female">Female (1.0% Concession &amp; Mahila Samriddhi)</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label"><span>State / UT Domicile</span> <span class="required">*</span></label>
+                <select class="form-select" id="creditInputState" required>
+                  <option value="">— Select State / UT —</option>
+                </select>
+              </div>
+
+              <!-- SC Category Self-Declaration Checkbox -->
+              <div class="form-group" style="background:rgba(99,102,241,0.08);border:1.2px solid rgba(99,102,241,0.3);border-radius:12px;padding:16px">
+                <label style="display:flex;align-items:flex-start;gap:12px;cursor:pointer;margin:0">
+                  <input type="checkbox" id="creditInputCasteCert" checked style="width:20px;height:20px;margin-top:2px;accent-color:#6366f1">
+                  <div>
+                    <strong style="color:#fff;font-size:14px" data-i18n="creditCasteCert">
+                      I hold or am eligible for a Scheduled Caste (SC) category certificate
+                    </strong>
+                    <p style="font-size:12px;color:var(--text-secondary);margin-top:4px" data-i18n="creditCasteCertNote">
+                      Self-declaration under DPDP Act 2023. Zero Aadhaar or document upload required client-side. Certificate will be verified at Channel Partner branch before loan disbursal.
+                    </p>
+                  </div>
+                </label>
+              </div>
+
+              <div class="form-actions">
+                <div></div>
+                <button class="btn btn-primary" onclick="CreditFormController.nextStep()">
+                  <span>Next: Project Details</span> <span>→</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Credit Step 2: Project Details -->
+          <div class="form-panel credit-form-panel" id="creditFormStep2">
+            <div class="form-card">
+              <div class="form-group">
+                <label class="form-label" data-i18n="creditPurpose">Funding Purpose <span class="required">*</span></label>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+                  <label style="background:rgba(255,255,255,0.04);border:1.5px solid var(--border);border-radius:12px;padding:14px;cursor:pointer;display:flex;align-items:center;gap:10px">
+                    <input type="radio" name="creditPurpose" value="business" checked onchange="CreditFormController.setPurpose('business')">
+                    <div>
+                      <strong style="color:#fff;display:block;font-size:13px">💼 Business &amp; Enterprise</strong>
+                      <span style="font-size:11px;color:var(--text-muted)">Trade, Services, Manufacturing, Agri</span>
+                    </div>
+                  </label>
+                  <label style="background:rgba(255,255,255,0.04);border:1.5px solid var(--border);border-radius:12px;padding:14px;cursor:pointer;display:flex;align-items:center;gap:10px">
+                    <input type="radio" name="creditPurpose" value="education" onchange="CreditFormController.setPurpose('education')">
+                    <div>
+                      <strong style="color:#fff;display:block;font-size:13px">🎓 Higher Education</strong>
+                      <span style="font-size:11px;color:var(--text-muted)">Engineering, Medical, Overseas</span>
+                    </div>
+                  </label>
+                </div>
+              </div>
+
+              <!-- Business Sector Row -->
+              <div class="form-group" id="creditBizSectorRow">
+                <label class="form-label" data-i18n="creditSector">Project Sector / Enterprise Type <span class="required">*</span></label>
+                <select class="form-select" id="creditInputSector">
+                  <option value="">— Select Industry / Sector —</option>
+                </select>
+              </div>
+
+              <!-- Education Course Row -->
+              <div class="form-group" id="creditEduCourseRow" style="display:none">
+                <label class="form-label">Degree / Course Stream <span class="required">*</span></label>
+                <select class="form-select" id="creditInputCourse">
+                  <option value="">— Select Course Stream —</option>
+                </select>
+              </div>
+
+              <!-- Estimated Project or Course Cost with Preset Chips -->
+              <div class="form-group">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+                  <label class="form-label" style="margin:0" data-i18n="creditCost">Estimated Project / Course Cost (₹) <span class="required">*</span></label>
+                  <span style="font-size:11.5px;color:var(--accent-mint)">● Micro Finance ≤ ₹1.4L • Term Loan ≤ ₹50L</span>
+                </div>
+                <input type="number" class="form-input" id="creditInputCost" value="140000" min="10000" max="10000000" placeholder="e.g. 140000">
+
+                <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px">
+                  <span style="font-size:11px;color:var(--text-muted);align-self:center">Quick Presets:</span>
+                  <button type="button" class="cost-preset-btn" onclick="CreditFormController.setCost(50000)">₹50K (Artisan)</button>
+                  <button type="button" class="cost-preset-btn" onclick="CreditFormController.setCost(140000)">₹1.4L (Micro Max)</button>
+                  <button type="button" class="cost-preset-btn" onclick="CreditFormController.setCost(500000)">₹5L (Retail Shop)</button>
+                  <button type="button" class="cost-preset-btn" onclick="CreditFormController.setCost(1500000)">₹15L (Workshop)</button>
+                  <button type="button" class="cost-preset-btn" onclick="CreditFormController.setCost(3000000)">₹30L (Factory Unit)</button>
+                  <button type="button" class="cost-preset-btn" onclick="CreditFormController.setCost(5000000)">₹50L (Term Max)</button>
+                </div>
+              </div>
+
+              <div class="form-actions">
+                <button class="btn btn-secondary" onclick="CreditFormController.prevStep()">
+                  <span>←</span> <span>Back</span>
+                </button>
+                <button class="btn btn-primary" onclick="CreditFormController.nextStep()">
+                  <span>Next: Income Eligibility</span> <span>→</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Credit Step 3: Family Income Ceiling -->
+          <div class="form-panel credit-form-panel" id="creditFormStep3">
+            <div class="form-card">
+              <div class="form-group">
+                <label class="form-label"><span data-i18n="creditIncomeLimit">Annual Household Income (₹)</span> <span class="required">*</span></label>
+                <select class="form-select" id="creditInputIncome" required>
+                  <option value="">— Select Annual Household Income Range —</option>
+                  <option value="80000">Below ₹1,00,000 / year (Priority BPL Category)</option>
+                  <option value="150000">₹1,00,000 — ₹2,00,000 / year</option>
+                  <option value="250000">₹2,00,000 — ₹3,00,000 / year</option>
+                  <option value="400000" selected>₹3,00,000 — ₹5,00,000 / year (Eligible under NSFDC Cap)</option>
+                  <option value="600000">₹5,00,000 — ₹7,50,000 (Exceeds ₹5L NSFDC Ceiling)</option>
+                  <option value="1000000">Above ₹7,50,000 / year (Commercial Lending Only)</option>
+                </select>
+                <div style="font-size:12px;color:var(--text-muted);margin-top:6px" data-i18n="creditIncomeLimitNote">
+                  ℹ️ NSFDC concessional loans are statutory channel funds reserved for SC families with annual income ≤ ₹5,00,000.
+                </div>
+              </div>
+
+              <div class="form-actions">
+                <button class="btn btn-secondary" onclick="CreditFormController.prevStep()">
+                  <span>←</span> <span>Back</span>
+                </button>
+                <button class="btn btn-success" onclick="CreditFormController.submit()">
+                  <span>⚡</span> <span>Evaluate Concessional Schemes &amp; Rates</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div><!-- End creditFormContainer -->
+
+      <!-- Results Area (Welfare Schemes) -->
       <div id="resultsArea" style="display:none; padding-top: 40px; padding-bottom: 60px;"></div>
+
+      <!-- Results Area (Credit & Enterprise Schemes - SIH26093) -->
+      <div id="creditResultsArea" style="display:none; padding-top: 30px; padding-bottom: 60px;"></div>
     </div>
   </section>
 
@@ -349,101 +610,6 @@
             <span>Find Schemes Now</span> <span>→</span>
           </button>
         </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ==================== PAGE 4: NGO / COUNSELOR CAMP MODE ==================== -->
-  <section class="page" id="page-ngo">
-    <div class="container">
-      <div class="section-header">
-        <div class="section-tag">NGO &amp; COUNSELOR PORTAL</div>
-        <h1 class="section-title">Disability Camp Bulk Matching</h1>
-        <p class="section-subtitle">Evaluate multiple special-needs student profiles simultaneously for district camps and institutions.</p>
-      </div>
-
-      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:24px;background:rgba(7,35,34,0.6);padding:16px 20px;border-radius:14px;border:1px solid var(--border)">
-        <div style="display:flex;align-items:center;gap:10px">
-          <span style="font-size:24px">⛺</span>
-          <div>
-            <div style="font-weight:700;color:#fff;font-size:14px">Active Camp Batch: National Inclusive Drive 2026</div>
-            <div style="font-size:12px;color:var(--accent-mint)">Evaluation Engine: Samarthya 50+ Policy Matrix</div>
-          </div>
-        </div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <button class="btn-sm btn-secondary" onclick="NGOMode.loadDemoBatch()">🔄 Reload Demo Batch</button>
-          <label class="btn-sm btn-secondary" style="cursor:pointer;margin:0">
-            📥 Import CSV
-            <input type="file" accept=".csv" style="display:none" onchange="NGOMode.handleCSVUpload(this)">
-          </label>
-          <button class="btn-sm btn-secondary" onclick="NGOMode.downloadTemplate()">📄 Sample Template</button>
-          <button class="btn-sm btn-primary" onclick="NGOMode.exportBatchCSV()">📤 Export Report</button>
-        </div>
-      </div>
-
-      <div class="ngo-stats-grid" id="ngoStatsContainer"></div>
-
-      <div style="margin-top:28px">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
-          <h3 style="font-size:18px;font-weight:800;color:#fff;margin:0">Beneficiary Evaluation Matrix</h3>
-          <span style="font-size:12px;color:var(--accent-mint)">● All 50+ Policies Evaluated Instantly</span>
-        </div>
-        <div class="ngo-table-container">
-          <table class="ngo-table">
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>Student &amp; Domicile</th>
-                <th>Disability &amp; Severity</th>
-                <th>Matched Schemes</th>
-                <th>Top Matched Entitlements</th>
-                <th>Est. Benefit</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody id="ngoStudentTableBody"></tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ==================== PAGE 5: HOW IT WORKS ==================== -->
-  <section class="page" id="page-how">
-    <div class="container">
-      <div class="section-header">
-        <div class="section-tag">ENGINE ARCHITECTURE</div>
-        <h1 class="section-title" data-i18n="howTitle">How Samarthya Operates</h1>
-        <p class="section-subtitle" data-i18n="howSubtitle">Four straightforward steps to discover your entitled welfare schemes.</p>
-      </div>
-
-      <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(240px, 1fr));gap:20px;margin-bottom:48px">
-        <div class="form-card">
-          <div style="font-family:var(--font-heading);font-size:32px;font-weight:900;color:var(--accent-mint);margin-bottom:8px">01</div>
-          <h4 style="font-size:18px;font-weight:800;color:#fff;margin-bottom:6px">Demographic Input</h4>
-          <p style="font-size:13px;color:var(--text-secondary)">Provide your basic criteria: DOB, disability type, percentage, state, and income slab.</p>
-        </div>
-        <div class="form-card">
-          <div style="font-family:var(--font-heading);font-size:32px;font-weight:900;color:var(--accent-cyan);margin-bottom:8px">02</div>
-          <h4 style="font-size:18px;font-weight:800;color:#fff;margin-bottom:6px">50+ Policy Matrix Scan</h4>
-          <p style="font-size:13px;color:var(--text-secondary)">The local rule engine cross-checks all central and state welfare notifications.</p>
-        </div>
-        <div class="form-card">
-          <div style="font-family:var(--font-heading);font-size:32px;font-weight:900;color:var(--accent-purple);margin-bottom:8px">03</div>
-          <h4 style="font-size:18px;font-weight:800;color:#fff;margin-bottom:6px">Probability Scoring</h4>
-          <p style="font-size:13px;color:var(--text-secondary)">Calculates an explainable trust score (0–100%) explaining exactly why you match.</p>
-        </div>
-        <div class="form-card">
-          <div style="font-family:var(--font-heading);font-size:32px;font-weight:900;color:var(--accent-gold);margin-bottom:8px">04</div>
-          <h4 style="font-size:18px;font-weight:800;color:#fff;margin-bottom:6px">Direct Official Links</h4>
-          <p style="font-size:13px;color:var(--text-secondary)">Get direct application links to NSP, Swavlamban, and ALIMCO with zero middlemen.</p>
-        </div>
-      </div>
-
-      <div style="text-align:center">
-        <button class="btn btn-primary" onclick="App.navigate('match')">
-          <span>Start Finding Schemes Now</span> <span>→</span>
-        </button>
       </div>
     </div>
   </section>
@@ -547,8 +713,7 @@
         <a href="#home" onclick="App.navigate('home', event)" data-i18n="navHome">Home</a>
         <a href="#match" onclick="App.navigate('match', event)" data-i18n="navMatch">Find Schemes</a>
         <a href="#dashboard" onclick="App.navigate('dashboard', event)" data-i18n="navDashboard">Dashboard</a>
-        <a href="#ngo" onclick="App.navigate('ngo', event)" data-i18n="navNGO">NGO Camp Mode</a>
-        <a href="#how" onclick="App.navigate('how', event)" data-i18n="navHow">How It Works</a>
+        <a href="#how" onclick="App.scrollToHow(event)" data-i18n="navHow">How It Works</a>
         <a href="#about-section" onclick="App.scrollToAbout(event)" data-i18n="navAbout">About</a>
         <a href="#" onclick="WhatsAppLead.openModal();return false;" style="color:#25D366;font-weight:700">💬 VIP WhatsApp Alerts</a>
       </div>
@@ -556,20 +721,28 @@
     </div>
   </footer>
 
-  <!-- Core Scripts with Cache Buster v5.0 -->
-  <script src="js/db.js?v=5.0"></script>
-  <script src="js/schemes.js?v=5.0"></script>
-  <script src="js/matcher.js?v=5.0"></script>
-  <script src="js/i18n.js?v=5.0"></script>
-  <script src="js/accessibility.js?v=5.0"></script>
-  <script src="js/wispr-flow.js?v=5.0"></script>
-  <script src="js/samarthya-ai.js?v=5.0"></script>
-  <script src="js/whatsapp-lead.js?v=5.0"></script>
-  <script src="js/tracker.js?v=5.0"></script>
-  <script src="js/ngo-mode.js?v=5.0"></script>
-  <script src="js/background-3d.js?v=5.0"></script>
-  <script src="js/report.js?v=5.0"></script>
-  <script src="js/cursor.js?v=5.0"></script>
-  <script src="js/app.js?v=5.0"></script>
+  <!-- Leaflet Interactive Maps -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+  <!-- Core Scripts with Cache Buster v5.9 -->
+  <script src="js/db.js?v=5.9"></script>
+  <script src="js/schemes.js?v=5.9"></script>
+  <script src="js/credit-schemes.js?v=5.9"></script>
+  <script src="js/matcher.js?v=5.9"></script>
+  <script src="js/credit-matcher.js?v=5.9"></script>
+  <script src="js/financial-calculator.js?v=5.9"></script>
+  <script src="js/partner-locator.js?v=5.9"></script>
+  <script src="js/i18n.js?v=5.9"></script>
+  <script src="js/accessibility.js?v=5.9"></script>
+  <script src="js/wispr-flow.js?v=5.9"></script>
+  <script src="js/samarthya-ai.js?v=5.9"></script>
+  <script src="js/whatsapp-lead.js?v=5.9"></script>
+  <script src="js/tracker.js?v=5.9"></script>
+  <script src="js/ngo-mode.js?v=5.9"></script>
+  <script src="js/background-3d.js?v=5.9"></script>
+  <script src="js/spatial-3d.js?v=5.9"></script>
+  <script src="js/report.js?v=5.9"></script>
+  <script src="js/cursor.js?v=6.0"></script>
+  <script src="js/app.js?v=6.0"></script>
 </body>
 </html>

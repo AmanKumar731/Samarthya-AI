@@ -1,15 +1,15 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
-from typing import List, Union, Dict, Any
+from typing import List, Union, Dict, Any, Optional
 import json
 import os
 from datetime import date
 
 app = FastAPI(
-    title="Samarthya Scheme Matching API",
-    description="Backend API for matching special-needs student profiles with eligible government welfare schemes.",
-    version="1.0.0"
+    title="Samarthya Welfare & Credit Scheme Matching API",
+    description="Backend API for matching special-needs student profiles and SC entrepreneurs with eligible government welfare schemes & NSFDC concessional loans.",
+    version="2.0.0"
 )
 
 # Enable CORS for frontend integration
@@ -32,7 +32,9 @@ except Exception as e:
         "EDUCATION_LEVELS": [],
         "DISABILITY_TYPES": [],
         "SCHEME_CATEGORIES": {},
-        "SCHEME_DATABASE": []
+        "SCHEME_DATABASE": [],
+        "CREDIT_SCHEME_DATABASE": [],
+        "CHANNEL_PARTNERS_DATABASE": []
     }
     print(f"Warning: Failed to load schemes database: {e}")
 
@@ -46,6 +48,21 @@ class StudentProfile(BaseModel):
     disabilityPercent: int = Field(ge=0, le=100)
     educationLevel: str
     householdIncome: int
+
+class CreditApplicantProfile(BaseModel):
+    name: str = "Applicant"
+    state: str = "maharashtra"
+    gender: str = "male"
+    householdIncome: int = 180000
+    hasScCert: bool = True
+    scCertNumber: str = ""
+    purpose: str = "business"  # business, education
+    sector: str = "service"
+    courseType: str = "inland"
+    projectCost: int = 200000
+    promoterContribution: int = 20000
+    hasProjectReport: bool = False
+    trainingCompleted: bool = False
 
 # Matching Engine helpers
 def calculate_age(dob_str: str) -> int:
@@ -332,6 +349,145 @@ def match_profile(profile: StudentProfile):
             "avgScore": f"{avg_score:.1f}",
             "categories": categories
         }
+    }
+
+# ==================== NSFDC Credit Matching Functions ====================
+def evaluate_credit_scheme(profile: CreditApplicantProfile, scheme: Dict[str, Any]) -> Dict[str, Any]:
+    checks = []
+    total_weight = 0
+    passed_weight = 0
+    matched_reasons = []
+    missing_reasons = []
+
+    is_sc = profile.hasScCert
+    income = profile.householdIncome
+    cost = profile.projectCost
+    purpose = profile.purpose
+    is_education = purpose == "education"
+
+    # 1. SC Check (Weight: 30)
+    w_sc = 30
+    total_weight += w_sc
+    if is_sc:
+        passed_weight += w_sc
+        checks.append({"id": "sc_category", "label": "SC Category Verification", "passed": True, "detail": "Valid SC Caste Certificate self-declared."})
+        matched_reasons.append("SC Community Entitlement verified")
+    else:
+        checks.append({"id": "sc_category", "label": "SC Category Verification", "passed": False, "detail": "NSFDC mandates Scheduled Caste (SC) category."})
+        missing_reasons.append("Requires valid SC certificate")
+
+    # 2. Income Check (Weight: 30) - Statutory ceiling of Rs 5.0 Lakhs
+    w_inc = 30
+    total_weight += w_inc
+    if income <= 500000:
+        passed_weight += w_inc
+        checks.append({"id": "income_limit", "label": "Household Income <= Rs 5.0L", "passed": True, "detail": f"Annual income Rs {income:,} is within Rs 5.0L ceiling."})
+        matched_reasons.append(f"Income Rs {income:,} complies with NSFDC norms")
+    else:
+        checks.append({"id": "income_limit", "label": "Household Income <= Rs 5.0L", "passed": False, "detail": f"Income Rs {income:,} exceeds statutory Rs 5.0L ceiling."})
+        missing_reasons.append("Annual income exceeds Rs 5.0 Lakh limit")
+
+    # 3. Purpose & Cost Check (Weight: 25)
+    w_cost = 25
+    total_weight += w_cost
+    scheme_id = scheme.get("id", "")
+    max_amount = scheme.get("maxAmount", 5000000)
+
+    if is_education:
+        if scheme_id == "nsfdc_education_loan":
+            passed_weight += w_cost
+            checks.append({"id": "purpose_cost", "label": "Education Course Loan Fit", "passed": True, "detail": "Optimal for higher professional education."})
+            matched_reasons.append("Concessional student loan rate (6.5%)")
+        else:
+            checks.append({"id": "purpose_cost", "label": "Enterprise Purpose Mismatch", "passed": False, "detail": "Scheme is designed for business, not tuition."})
+    else:
+        if scheme_id == "nsfdc_education_loan":
+            checks.append({"id": "purpose_cost", "label": "Purpose Mismatch", "passed": False, "detail": "Education scheme not applicable for commercial enterprise."})
+        elif cost <= max_amount:
+            passed_weight += w_cost
+            checks.append({"id": "purpose_cost", "label": f"Project Cost <= Rs {max_amount/100000:.1f}L", "passed": True, "detail": f"Project cost Rs {cost:,} is within scheme ceiling."})
+            matched_reasons.append(f"Within scheme financial cap of Rs {max_amount/100000:.1f} Lakh")
+        else:
+            partial = round(w_cost * 0.4)
+            passed_weight += partial
+            checks.append({"id": "purpose_cost", "label": "Project Cost Exceeds Cap", "passed": False, "detail": f"Cost Rs {cost:,} exceeds scheme cap Rs {max_amount:,}."})
+            missing_reasons.append(f"Cost exceeds maximum scheme limit of Rs {max_amount:,}")
+
+    # 4. Sector Check (Weight: 10)
+    w_sec = 10
+    total_weight += w_sec
+    if not is_education:
+        passed_weight += w_sec
+        checks.append({"id": "sector_fit", "label": "Commercial Sector Viability", "passed": True, "detail": f"Sector '{profile.sector}' is an eligible commercial activity."})
+        matched_reasons.append(f"Recognized commercial sector: {profile.sector}")
+    else:
+        passed_weight += w_sec
+        checks.append({"id": "course_fit", "label": "Accredited Higher Study", "passed": True, "detail": f"Course track '{profile.courseType}' is eligible."})
+
+    # 5. Channel Partner Availability (Weight: 5)
+    w_part = 5
+    total_weight += w_part
+    state_norm = profile.state.lower().replace(" ", "_")
+    partners = schemes_data.get("CHANNEL_PARTNERS_DATABASE", [])
+    has_active_partner = any(p.get("state", "").lower().replace(" ", "_") == state_norm and p.get("fundHealthStatus") == "healthy" for p in partners)
+    if has_active_partner:
+        passed_weight += w_part
+        checks.append({"id": "partner_avail", "label": "Channel Partner Active", "passed": True, "detail": f"Active channel partner branch available in {profile.state}."})
+        matched_reasons.append(f"Active SCA / PSB partner operating in {profile.state}")
+    else:
+        passed_weight += round(w_part * 0.5)
+        checks.append({"id": "partner_avail", "label": "Channel Partner Network", "passed": True, "detail": "Lead Public Sector Bank channel available."})
+
+    score = round((passed_weight / total_weight) * 100) if total_weight > 0 else 0
+    is_eligible = is_sc and (income <= 500000)
+
+    if not is_eligible:
+        status = "ineligible"
+    elif score >= 85:
+        status = "highly-eligible"
+    elif score >= 65:
+        status = "likely-eligible"
+    else:
+        status = "partially-eligible"
+
+    return {
+        "scheme": scheme,
+        "score": score,
+        "status": status,
+        "isEligible": is_eligible,
+        "checks": checks,
+        "matchedReasons": matched_reasons,
+        "missingReasons": missing_reasons,
+        "indicativeRate": scheme.get("interestRates", {}).get("beneficiaryFinalMin", 6.5)
+    }
+
+@app.get("/api/credit-schemes")
+def get_credit_schemes():
+    return schemes_data.get("CREDIT_SCHEME_DATABASE", [])
+
+@app.get("/api/channel-partners")
+def get_channel_partners(state: Optional[str] = Query(None), healthy_only: bool = Query(False)):
+    partners = schemes_data.get("CHANNEL_PARTNERS_DATABASE", [])
+    if state:
+        st_clean = state.lower().replace(" ", "_")
+        partners = [p for p in partners if p.get("state", "").lower().replace(" ", "_") == st_clean]
+    if healthy_only:
+        partners = [p for p in partners if p.get("fundHealthStatus") == "healthy"]
+    return partners
+
+@app.post("/api/match-credit")
+def match_credit_profile(profile: CreditApplicantProfile):
+    schemes = schemes_data.get("CREDIT_SCHEME_DATABASE", [])
+    results = []
+    for s in schemes:
+        res = evaluate_credit_scheme(profile, s)
+        results.append(res)
+    results.sort(key=lambda x: x["score"], reverse=True)
+    return {
+        "profile": profile.model_dump(),
+        "results": results,
+        "eligibleCount": sum(1 for r in results if r["isEligible"]),
+        "bestMatch": results[0] if results else None
     }
 
 if __name__ == "__main__":

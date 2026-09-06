@@ -68,6 +68,7 @@ const ApplicationTracker = {
 
     const newApp = {
       id: 'app_' + Date.now(),
+      type: 'welfare',
       schemeId: scheme.id,
       schemeName: scheme.name,
       ministry: scheme.ministry,
@@ -83,6 +84,43 @@ const ApplicationTracker = {
     this.renderTracker();
 
     alert(`✓ Added "${scheme.name}" to your Application Tracker!`);
+    App.navigate('dashboard');
+  },
+
+  trackCreditScheme(schemeId, amount, emi, assignedPartner = null) {
+    const scheme = (window.CREDIT_SCHEME_DATABASE || []).find(s => s.id === schemeId);
+    if (!scheme) return;
+
+    const existing = this.trackedApplications.find(a => a.schemeId === schemeId);
+    if (existing) {
+      alert(`"${scheme.name}" is already in your Credit Tracker!`);
+      App.navigate('dashboard');
+      return;
+    }
+
+    const partnerName = assignedPartner ? assignedPartner.name : 'Channel Partner (SCA / Lead PSB)';
+
+    const newApp = {
+      id: 'credit_app_' + Date.now(),
+      type: 'credit',
+      schemeId: scheme.id,
+      schemeName: scheme.name,
+      ministry: 'NSFDC / ' + partnerName,
+      appliedDate: new Date().toISOString().split('T')[0],
+      deadline: 'Rolling Window 2026',
+      status: 'submitted_to_partner',
+      loanAmount: amount ? `₹${Number(amount).toLocaleString('en-IN')}` : scheme.maxAmountDisplay,
+      emi: emi ? `₹${Number(emi).toLocaleString('en-IN')}/mo` : '₹3,088/mo',
+      benefitAmount: `Loan: ${amount ? '₹' + Number(amount).toLocaleString('en-IN') : scheme.maxAmountDisplay} (EMI: ${emi ? '₹' + Number(emi).toLocaleString('en-IN') : '₹3,088'}/mo)`,
+      refNo: 'NSFDC-' + Math.floor(100000 + Math.random() * 900000),
+      partner: partnerName
+    };
+
+    this.trackedApplications.unshift(newApp);
+    this.saveToStorage();
+    this.renderTracker();
+
+    alert(`✓ Added "${scheme.name}" (${newApp.loanAmount}) to your Credit Application Tracker!`);
     App.navigate('dashboard');
   },
 
@@ -104,7 +142,55 @@ const ApplicationTracker = {
   },
 
   renderTracker() {
-    const container = document.getElementById('trackerApplicationsList');
+    let container = document.getElementById('trackerApplicationsList');
+    const dashContent = document.getElementById('dashboardContent');
+
+    if (!container && dashContent) {
+      const totalApps = this.trackedApplications.length;
+      const creditCount = this.trackedApplications.filter(a => a.type === 'credit').length;
+      const welfareCount = this.trackedApplications.filter(a => a.type !== 'credit').length;
+      const approvedCount = this.trackedApplications.filter(a => a.status === 'disbursed' || a.status === 'sanctioned').length;
+
+      dashContent.innerHTML = `
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:28px">
+          <div class="form-card" style="text-align:center;padding:20px">
+            <div style="font-size:24px;margin-bottom:6px">📋</div>
+            <div style="font-family:var(--font-heading);font-size:28px;font-weight:800;color:var(--accent-mint)">${totalApps}</div>
+            <div style="font-size:12px;color:var(--text-muted)">Total Applications Tracked</div>
+          </div>
+          <div class="form-card" style="text-align:center;padding:20px">
+            <div style="font-size:24px;margin-bottom:6px">⏳</div>
+            <div style="font-family:var(--font-heading);font-size:28px;font-weight:800;color:#38BDF8">${totalApps - approvedCount}</div>
+            <div style="font-size:12px;color:var(--text-muted)">In Active Processing</div>
+          </div>
+          <div class="form-card" style="text-align:center;padding:20px">
+            <div style="font-size:24px;margin-bottom:6px">💼</div>
+            <div style="font-family:var(--font-heading);font-size:28px;font-weight:800;color:#818cf8">${creditCount} Credit / ${welfareCount} Welfare</div>
+            <div style="font-size:12px;color:var(--text-muted)">Track Split</div>
+          </div>
+          <div class="form-card" style="text-align:center;padding:20px">
+            <div style="font-size:24px;margin-bottom:6px">🎉</div>
+            <div style="font-family:var(--font-heading);font-size:28px;font-weight:800;color:var(--accent-gold)">${approvedCount}</div>
+            <div style="font-size:12px;color:var(--text-muted)">Sanctioned / Disbursed</div>
+          </div>
+        </div>
+
+        <div style="margin-top:32px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:12px">
+            <div>
+              <h3 style="font-size:20px;font-weight:800;color:#fff;margin:0">📂 My Applications Tracker</h3>
+              <p style="font-size:13px;color:var(--text-muted);margin:2px 0 0">Live 5-stage DBT / Channel Credit verification pipeline</p>
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button class="btn-sm btn-primary" onclick="App.navigate('match')">+ Find More Schemes</button>
+            </div>
+          </div>
+          <div id="trackerApplicationsList" class="tracker-container"></div>
+        </div>
+      `;
+      container = document.getElementById('trackerApplicationsList');
+    }
+
     if (!container) return;
 
     if (this.trackedApplications.length === 0) {
@@ -119,7 +205,7 @@ const ApplicationTracker = {
       return;
     }
 
-    const stages = [
+    const welfareStages = [
       { key: 'draft', label: '1. Draft' },
       { key: 'applied', label: '2. Applied' },
       { key: 'verification', label: '3. Doc Verification' },
@@ -127,8 +213,18 @@ const ApplicationTracker = {
       { key: 'disbursed', label: '5. Approved & DBT' }
     ];
 
+    const creditStages = [
+      { key: 'draft', label: '1. Proposal Draft' },
+      { key: 'submitted_to_partner', label: '2. Partner Inward' },
+      { key: 'field_appraisal', label: '3. Field Appraisal' },
+      { key: 'sanctioned', label: '4. Sanction Letter' },
+      { key: 'disbursed', label: '5. Loan Disbursed' }
+    ];
+
     container.innerHTML = this.trackedApplications.map(app => {
-      const currentStageIndex = stages.findIndex(s => s.key === app.status);
+      const isCredit = app.type === 'credit';
+      const stages = isCredit ? creditStages : welfareStages;
+      const currentStageIndex = Math.max(0, stages.findIndex(s => s.key === app.status));
 
       const stepperHtml = stages.map((s, idx) => {
         let dotClass = 'tracker-step-dot';
@@ -143,17 +239,24 @@ const ApplicationTracker = {
         `;
       }).join('');
 
+      const trackBadge = isCredit
+        ? `<span class="scheme-category-badge" style="background:rgba(99,102,241,0.2);color:#818cf8;border:1px solid rgba(99,102,241,0.4);font-size:11px;margin-right:6px">💼 NSFDC Credit</span>`
+        : `<span class="scheme-category-badge" style="background:rgba(52,211,153,0.2);color:#34d399;border:1px solid rgba(52,211,153,0.4);font-size:11px;margin-right:6px">♿ Welfare</span>`;
+
       return `
         <div class="tracker-card">
           <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px">
             <div>
-              <span class="status-badge status-likely" style="font-size:11px">Ref: ${app.refNo}</span>
-              <h3 style="font-size:17px;font-weight:700;color:#fff;margin:6px 0 2px">${app.schemeName}</h3>
+              <div style="display:flex;align-items:center;margin-bottom:4px">
+                ${trackBadge}
+                <span class="status-badge status-likely" style="font-size:11px">Ref: ${app.refNo}</span>
+              </div>
+              <h3 style="font-size:17px;font-weight:700;color:#fff;margin:4px 0 2px">${app.schemeName}</h3>
               <p style="font-size:12px;color:var(--text-muted);margin:0">${app.ministry}</p>
             </div>
             <div style="text-align:right">
               <div style="font-size:15px;font-weight:800;color:#34d399">${app.benefitAmount}</div>
-              <div style="font-size:11px;color:#f87171">Deadline: ${app.deadline}</div>
+              <div style="font-size:11px;color:#f87171">${isCredit ? 'Processing: Partner Window' : 'Deadline: ' + app.deadline}</div>
             </div>
           </div>
 

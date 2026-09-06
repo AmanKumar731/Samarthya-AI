@@ -58,21 +58,23 @@ const EDUCATION_LEVELS = [
 ];
 
 const DISABILITY_TYPES = [
-  { id: 'none', label: 'No Disability / General', labelHi: 'कोई दिव्यांगता नहीं / सामान्य' },
-  { id: 'visual', label: 'Visual Impairment', labelHi: 'दृष्टि बाधित' },
-  { id: 'hearing', label: 'Hearing Impairment', labelHi: 'श्रवण बाधित' },
-  { id: 'locomotor', label: 'Locomotor Disability', labelHi: 'चलने-फिरने में अक्षमता' },
-  { id: 'cerebral_palsy', label: 'Cerebral Palsy', labelHi: 'मस्तिष्काघात (सेरेब्रल पाल्सी)' },
-  { id: 'intellectual', label: 'Intellectual Disability', labelHi: 'बौद्धिक अक्षमता' },
-  { id: 'mental_illness', label: 'Mental Illness', labelHi: 'मानसिक रोग' },
-  { id: 'autism', label: 'Autism Spectrum Disorder', labelHi: 'ऑटिज्म स्पेक्ट्रम' },
-  { id: 'learning', label: 'Specific Learning Disability', labelHi: 'विशिष्ट अधिगम अक्षमता' },
+  { id: 'none', label: 'No Disability', labelHi: 'कोई दिव्यांगता नहीं' },
+  { id: 'locomotor', label: 'Locomotor Disability (Poliomyelitis, Amputation, Spinal Injury)', labelHi: 'चलने-फिरने में अक्षमता (लोकोमोटर)' },
+  { id: 'visual', label: 'Visual Impairment (Blindness / Low Vision)', labelHi: 'दृष्टि बाधित (अंधता / कम दृष्टि)' },
+  { id: 'hearing', label: 'Hearing Impairment (Deaf / Hard of Hearing)', labelHi: 'श्रवण बाधित (बधिर / ऊंचा सुनना)' },
   { id: 'speech', label: 'Speech & Language Disability', labelHi: 'वाक् एवं भाषा अक्षमता' },
-  { id: 'multiple', label: 'Multiple Disabilities', labelHi: 'बहु अक्षमता' },
-  { id: 'blood_disorder', label: 'Blood Disorder (Thalassemia / Sickle Cell)', labelHi: 'रक्त विकार (थैलेसीमिया)' },
+  { id: 'intellectual', label: 'Intellectual Disability (Down Syndrome, IDD)', labelHi: 'बौद्धिक अक्षमता' },
+  { id: 'learning', label: 'Specific Learning Disability (Dyslexia, Dysgraphia, ADHD)', labelHi: 'विशिष्ट अधिगम अक्षमता (डिस्लेक्सिया)' },
+  { id: 'autism', label: 'Autism Spectrum Disorder (ASD)', labelHi: 'ऑटिज्म स्पेक्ट्रम विकार' },
+  { id: 'mental_illness', label: 'Mental Illness / Psychiatric Disability', labelHi: 'मानसिक बीमारी' },
+  { id: 'cerebral_palsy', label: 'Cerebral Palsy', labelHi: 'मस्तिष्काघात (सेरेब्रल पाल्सी)' },
+  { id: 'muscular_dystrophy', label: 'Muscular Dystrophy', labelHi: 'मस्कुलर डिस्ट्रोफी' },
+  { id: 'chronic_neurological', label: 'Chronic Neurological Conditions (Parkinson\'s, MS)', labelHi: 'दीर्घकालिक तंत्रिका संबंधी स्थिति' },
+  { id: 'blood_disorder', label: 'Blood Disorder (Thalassemia / Sickle Cell / Hemophilia)', labelHi: 'रक्त विकार (थैलेसीमिया / सिकल सेल / हीमोफिलिया)' },
+  { id: 'multiple', label: 'Multiple Disabilities (Deafblindness, Combination)', labelHi: 'बहु-दिव्यांगता' },
   { id: 'acid_attack', label: 'Acid Attack Victim', labelHi: 'एसिड अटैक पीड़ित' },
   { id: 'dwarfism', label: 'Dwarfism', labelHi: 'बौनापन' },
-  { id: 'muscular_dystrophy', label: 'Muscular Dystrophy', labelHi: 'मस्कुलर डिस्ट्रोफी' },
+  { id: 'leprosy_cured', label: 'Leprosy Cured Person', labelHi: 'कुष्ठ रोग मुक्त व्यक्ति' },
 ];
 
 // ============ Scheme Categories ============

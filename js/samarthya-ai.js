@@ -13,24 +13,27 @@ const SamarthyaAI = {
     projectName: "Samarthya",
     projectTagline: "Intelligent Government Scheme Matching Portal for Persons with Disabilities (PwD)",
     coreFeatures: [
-      "AI-Powered rule matching across 50+ central and state government schemes",
-      "Instant eligibility scoring based on age, disability percentage, state, and income",
+      "AI-Powered rule matching across 50+ central and state government welfare schemes",
+      "NSFDC Concessional Credit & Education Loan matching for SC entrepreneurs (SIH26093)",
+      "Instant eligibility scoring based on age, disability/caste, state, and income",
       "100% Privacy-First & DPDP Act 2023 compliant (Zero PII or Aadhaar uploads required)",
+      "Financial EMI & Moratorium Calculator with amortization schedules",
+      "Geo-Spatial Channel Partner Locator with Nearest Capable (NPA) filtering",
       "Wispr Flow AI Voice Navigation & Smart Form Auto-fill",
-      "NGO & Counselor Camp Mode for bulk beneficiary evaluation",
-      "Real-time Application Tracker with deadline alerts & calendar export",
-      "Direct WhatsApp alerts for latest government notifications"
+      "NGO & DIC / SC-ST Hub Camp Mode for bulk beneficiary/entrepreneur evaluation",
+      "Real-time Application Tracker with deadline alerts & calendar export"
     ]
   },
 
   // Suggested starter prompts
   quickSuggestions: [
     "What is Samarthya and how does it work?",
+    "How do NSFDC concessional loans work for SC entrepreneurs?",
     "Which scholarships are available for 40%+ disability?",
     "How do I apply for free assistive devices under ADIP?",
-    "What documents do I need for NSP scholarships?",
-    "Does Samarthya require my Aadhaar card?",
-    "How to join the WhatsApp scheme notification group?"
+    "Which channel partner should I apply through for credit?",
+    "What is the interest rate and moratorium on NSFDC loans?",
+    "Does Samarthya require my Aadhaar card?"
   ],
 
   init() {
@@ -195,8 +198,13 @@ const SamarthyaAI = {
       'president of usa', 'python code for', 'hack', 'chatgpt', 'openai', 'joke', 'capital of'
     ];
 
+    const isCreditTopic = q.includes('nsfdc') || q.includes('loan') || q.includes('credit') ||
+      q.includes('entrepreneur') || q.includes('business') || q.includes('channel partner') ||
+      q.includes('emi') || q.includes('moratorium') || q.includes('term loan') || q.includes('micro finance');
+
     const isExplicitlyOffTopic = offTopicKeywords.some(w => q.includes(w)) &&
-      !q.includes('samarthya') && !q.includes('scheme') && !q.includes('disability') && !q.includes('scholarship');
+      !q.includes('samarthya') && !q.includes('scheme') && !q.includes('disability') && !q.includes('scholarship') &&
+      !isCreditTopic;
 
     if (isExplicitlyOffTopic) {
       return `
@@ -204,29 +212,88 @@ const SamarthyaAI = {
           <span style="font-size:18px">🛡️</span>
           <strong>Samarthya Domain Assistant</strong>
         </div>
-        <p>Main kewal <strong>Samarthya Portal</strong> aur <strong>Government PwD Welfare Schemes</strong> ke baare mein jaankari dene ke liye trained hoon.</p>
+        <p>Main <strong>Samarthya Portal</strong>, <strong>PwD Welfare Schemes</strong> aur <strong>NSFDC Concessional Credit Schemes (SC Entrepreneurs)</strong> ke baare mein jaankari dene ke liye trained hoon.</p>
         <p style="margin-top:8px">Aap mujhse pooch sakte hain:</p>
         <ul style="margin-top:6px;padding-left:18px;font-size:13px;line-height:1.6">
-          <li>Aapke liye eligible scholarships & assistive grants</li>
-          <li>ADIP, Pre-Matric, Post-Matric yojana ke rules</li>
-          <li>Required documents & application links</li>
-          <li>Samarthya matching score kaise kaam karta hai</li>
+          <li>PwD Scholarships &amp; Assistive Aids (ADIP, NSP)</li>
+          <li>NSFDC Micro Finance (≤ ₹1.4L) &amp; Term Loans (≤ ₹50L)</li>
+          <li>6.5%–8% Concessional Interest Rates &amp; Moratorium Holidays</li>
+          <li>Nearest Capable Channel Partners (SCAs, PSBs, RRBs)</li>
         </ul>
       `;
     }
 
-    // 2. What is Samarthya / About
+    // 2. NSFDC Concessional Loans & Credit Schemes (SIH26093)
+    if (q.includes('nsfdc') || q.includes('credit scheme') || (q.includes('loan') && (q.includes('sc') || q.includes('business') || q.includes('interest') || q.includes('apply')))) {
+      return `
+        <h4 style="color:var(--accent-mint);margin-bottom:6px">💼 NSFDC Concessional Credit Schemes</h4>
+        <p>National Scheduled Castes Finance &amp; Development Corporation (NSFDC) provides low-interest channel finance (6.5%–12% vs commercial 14%–18%) for SC beneficiaries with annual family income <strong>≤ ₹5.0 Lakh</strong>.</p>
+        <div style="margin-top:8px;display:flex;flex-direction:column;gap:8px">
+          <div class="ai-scheme-mini-card">
+            <strong>1. Micro Finance Scheme (≤ ₹1.40 Lakh)</strong>
+            <p style="font-size:12px;color:var(--text-muted)">6.5%–8% p.a. interest, 3–6 months moratorium holiday. Designed for micro-enterprises, small trade, and artisan activities.</p>
+          </div>
+          <div class="ai-scheme-mini-card">
+            <strong>2. Term Loan Scheme (≤ ₹50.00 Lakh)</strong>
+            <p style="font-size:12px;color:var(--text-muted)">8%–12% interest, up to 12 months moratorium, up to 10 years tenure. Up to 90% project cost financed for viable business ventures.</p>
+          </div>
+          <div class="ai-scheme-mini-card">
+            <strong>3. Education Loan Scheme (≤ ₹20L India / ₹40L Abroad)</strong>
+            <p style="font-size:12px;color:var(--text-muted)">6.5% for female students, 7.5% for male students. Zero EMI during course + 6 months post-study moratorium.</p>
+          </div>
+        </div>
+        <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn-sm btn-primary" onclick="App.setPersona('credit');App.navigate('match')">🎯 Match Credit Schemes</button>
+          <button class="btn-sm btn-secondary" onclick="SamarthyaAI.openWithPrompt('Which channel partner should I apply through for credit?')">Find Channel Partners</button>
+        </div>
+      `;
+    }
+
+    // 3. Channel Partners & NPA Routing (SIH26093 Problem Statement)
+    if (q.includes('channel partner') || q.includes('sca') || q.includes('where to apply') || q.includes('apply through') || q.includes('npa') || q.includes('bank')) {
+      return `
+        <h4 style="color:var(--accent-cyan);margin-bottom:6px">📍 How Channel Partner Routing Works</h4>
+        <p><strong>Crucial Rule:</strong> NSFDC does <em>not</em> disburse loans directly to individuals. All applications route through accredited <strong>Channel Partners</strong>:</p>
+        <ul style="margin-top:8px;padding-left:18px;font-size:13px;line-height:1.6">
+          <li><strong>State Channelizing Agencies (SCAs):</strong> e.g., DSFDC (Delhi), UPSCFDC (UP), MPBCDC (Maharashtra), TAHDCO (Tamil Nadu).</li>
+          <li><strong>Public Sector Banks (PSBs):</strong> PNB, SBI, Bank of Baroda, Canara Bank with dedicated MSME credit desks.</li>
+          <li><strong>Regional Rural Banks (RRBs) &amp; NBFC-MFIs:</strong> Aryavart Bank, NABFINS, Satin Creditcare.</li>
+        </ul>
+        <div class="ai-feature-card" style="margin-top:10px">
+          <strong>🛡️ Samarthya "Nearest Capable" Filter:</strong>
+          <p style="font-size:12px;color:var(--text-secondary);margin-top:4px">
+            Many applicants face delays because they unknowingly apply at branches with high NPA backlogs or paused fund quotas. Samarthya's Geo-Spatial Locator filters out high-NPA branches by default to route you to healthy lenders!
+          </p>
+        </div>
+      `;
+    }
+
+    // 4. EMI, Moratorium & Interest Calculations
+    if (q.includes('emi') || q.includes('moratorium') || q.includes('interest rate') || q.includes('repayment') || q.includes('calculation') || q.includes('byaj')) {
+      return `
+        <h4 style="color:var(--accent-gold);margin-bottom:6px">🧮 EMI &amp; Moratorium Protection</h4>
+        <p>NSFDC loans feature statutory <strong>Moratorium Periods</strong> where borrowers are exempt from paying EMIs:</p>
+        <ul style="margin-top:8px;padding-left:18px;font-size:13px;line-height:1.6">
+          <li><strong>Micro Finance:</strong> 3 to 6 months EMI holiday while you establish your trade.</li>
+          <li><strong>Term Loan:</strong> 6 to 12 months moratorium while factory/equipment is set up.</li>
+          <li><strong>Education Loan:</strong> Full course duration + 6 months post-study holiday.</li>
+        </ul>
+        <p style="margin-top:8px;font-size:13px">Use our <strong>Financial Calculator</strong> to compute your exact month-by-month repayment schedule and download CSV projections!</p>
+      `;
+    }
+
+    // 5. What is Samarthya / About
     if (q.includes('what is samarthya') || q.includes('about samarthya') || q.includes('samarthya kya hai') || q.includes('how does it work') || q.includes('kaise kaam karta')) {
       return `
         <h4 style="color:var(--accent-mint);margin-bottom:6px">🚀 About Samarthya</h4>
-        <p><strong>Samarthya</strong> is an intelligent government scheme matching portal designed specifically for special-needs students and persons with disabilities (PwD) across India.</p>
+        <p><strong>Samarthya</strong> is an intelligent government scheme matching portal with dual-track intelligence:</p>
         <div class="ai-feature-card">
-          <div style="font-weight:700;color:#fff;margin-bottom:4px">Key Capabilities:</div>
+          <div style="font-weight:700;color:#fff;margin-bottom:4px">Dual Track Capabilities:</div>
           <ul style="padding-left:18px;font-size:13px;line-height:1.6">
-            <li><strong>Instant Multi-Rule Matching:</strong> Cross-references your age, disability severity (40%+), state domicile, and household income against 50+ government welfare policies in &lt;2 seconds.</li>
-            <li><strong>100% Privacy & Zero Aadhaar Uploads:</strong> No document uploads or personal ID numbers required. Completely DPDP Act 2023 compliant.</li>
-            <li><strong>Wispr Flow AI Voice Assistant:</strong> Fill out forms or ask queries naturally with spoken voice commands.</li>
-            <li><strong>Direct Actionable Links:</strong> Direct access to National Scholarship Portal (NSP), Swavlamban UDID, and ALIMCO.</li>
+            <li><strong>♿ Welfare Track:</strong> Instant matching across 50+ central &amp; state PwD welfare schemes and scholarships in &lt;2s.</li>
+            <li><strong>💼 Credit Track (SIH26093):</strong> Concessional credit &amp; education loan matching for SC entrepreneurs seeking NSFDC channel finance.</li>
+            <li><strong>100% Privacy-First:</strong> Zero Aadhaar or document upload required; fully DPDP Act 2023 compliant.</li>
+            <li><strong>Nearest Capable Locator:</strong> Map-based directory filtering out high-NPA channel partner branches.</li>
           </ul>
         </div>
         <button class="btn-sm btn-primary" style="margin-top:10px" onclick="App.navigate('match')">Start Finding Schemes →</button>

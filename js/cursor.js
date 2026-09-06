@@ -203,14 +203,18 @@
       window.addEventListener('mousemove', (e) => {
         this.mouse.x = e.clientX;
         this.mouse.y = e.clientY;
+        this.dotPos.x = e.clientX;
+        this.dotPos.y = e.clientY;
+
+        if (this.dot) {
+          this.dot.style.transform = `translate3d(${e.clientX}px, ${e.clientY}px, 0)`;
+        }
 
         if (!this.isVisible) {
           this.isVisible = true;
           document.body.classList.add('cursor-active');
           this.ringPos.x = e.clientX;
           this.ringPos.y = e.clientY;
-          this.dotPos.x = e.clientX;
-          this.dotPos.y = e.clientY;
         }
 
         // Check hovered elements dynamically
@@ -297,19 +301,24 @@
     },
 
     render() {
-      // Smooth linear interpolation (lerp) for trailing ring
-      const ringLerp = 0.18;
-      const dotLerp = 0.85;
+      if (document.hidden) {
+        this.rafId = requestAnimationFrame(() => this.render());
+        return;
+      }
+
+      // Snappy, ultra-responsive lerp for trailing aura ring (fast follow)
+      const ringLerp = 0.52;
 
       this.ringPos.x += (this.mouse.x - this.ringPos.x) * ringLerp;
       this.ringPos.y += (this.mouse.y - this.ringPos.y) * ringLerp;
 
-      this.dotPos.x += (this.mouse.x - this.dotPos.x) * dotLerp;
-      this.dotPos.y += (this.mouse.y - this.dotPos.y) * dotLerp;
+      // Center dot follows 1:1 instantaneously with zero lag
+      this.dotPos.x = this.mouse.x;
+      this.dotPos.y = this.mouse.y;
 
-      this.currentScale += (this.targetScale - this.currentScale) * 0.15;
+      this.currentScale += (this.targetScale - this.currentScale) * 0.35;
 
-      // Transform DOM elements
+      // Transform DOM elements with hardware acceleration
       if (this.dot) {
         this.dot.style.transform = `translate3d(${this.dotPos.x}px, ${this.dotPos.y}px, 0)`;
       }

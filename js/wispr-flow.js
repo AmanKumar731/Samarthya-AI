@@ -28,7 +28,8 @@ const WisprFlow = {
     this.recognition = new SpeechRecognition();
     this.recognition.continuous = true;
     this.recognition.interimResults = true;
-    this.recognition.lang = I18N.currentLang === 'hi' ? 'hi-IN' : 'en-IN';
+    const langMap = { en: 'en-IN', hi: 'hi-IN', pa: 'pa-IN', mr: 'mr-IN', ta: 'ta-IN', gu: 'gu-IN' };
+    this.recognition.lang = langMap[I18N.currentLang] || 'en-IN';
 
     this.recognition.onresult = (event) => {
       let interimTranscript = '';
@@ -91,7 +92,8 @@ const WisprFlow = {
     this.startAudioVisualization();
 
     try {
-      this.recognition.lang = I18N.currentLang === 'hi' ? 'hi-IN' : 'en-IN';
+      const langMap = { en: 'en-IN', hi: 'hi-IN', pa: 'pa-IN', mr: 'mr-IN', ta: 'ta-IN', gu: 'gu-IN' };
+      this.recognition.lang = langMap[I18N.currentLang] || 'en-IN';
       this.recognition.start();
     } catch (e) {
       console.warn('Recognition start exception:', e);
